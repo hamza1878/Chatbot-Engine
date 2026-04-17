@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: moviroo-postgres
+    environment:
+      POSTGRES_USER: moviroo
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: moviroo_chatbot
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U moviroo"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - moviroo-network
+
+  # Moviroo AI Chatbot API
+  chatbot-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: moviroo-chatbot-api
+    environment:
+      DATABASE_URL: postgresql+asyncpg://moviroo:password@postgres:5432/moviroo_chatbot
+      API_HOST: 0.0.0.0
+      API_PORT: 8000
+      ENVIRONMENT: production
+      DEBUG: "False"
+      LOG_LEVEL: INFO
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data
+      - ./models:/app/models
+      - ./logs:/app/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - moviroo-network
+    restart: unless-stopped
+
+  # PgAdmin (Optional - for database management)
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: moviroo-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@moviroo.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    networks:
+      - moviroo-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  moviroo-network:
+    driver: bridge
