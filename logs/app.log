@@ -1,0 +1,780 @@
+2026-04-20 10:01:37.285 | INFO     | main:lifespan:53 - ============================================================
+2026-04-20 10:01:37.286 | INFO     | main:lifespan:54 - Starting Moviroo AI Chatbot v1.0.0
+2026-04-20 10:01:37.295 | INFO     | logging:callHandlers:1706 - BEGIN (implicit)
+2026-04-20 10:01:37.295 | INFO     | logging:callHandlers:1706 - PRAGMA main.table_info("tickets")
+2026-04-20 10:01:37.296 | INFO     | logging:callHandlers:1706 - [raw sql] ()
+2026-04-20 10:01:37.299 | INFO     | logging:callHandlers:1706 - PRAGMA temp.table_info("tickets")
+2026-04-20 10:01:37.300 | INFO     | logging:callHandlers:1706 - [raw sql] ()
+2026-04-20 10:01:37.301 | INFO     | logging:callHandlers:1706 - PRAGMA main.table_info("feedback")
+2026-04-20 10:01:37.302 | INFO     | logging:callHandlers:1706 - [raw sql] ()
+2026-04-20 10:01:37.303 | INFO     | logging:callHandlers:1706 - PRAGMA temp.table_info("feedback")
+2026-04-20 10:01:37.303 | INFO     | logging:callHandlers:1706 - [raw sql] ()
+2026-04-20 10:01:37.306 | INFO     | logging:callHandlers:1706 - 
+CREATE TABLE tickets (
+	id INTEGER NOT NULL, 
+	ticket_id VARCHAR(50), 
+	question TEXT NOT NULL, 
+	answer TEXT, 
+	category VARCHAR(50), 
+	language VARCHAR(20), 
+	status VARCHAR(20), 
+	confidence_score FLOAT, 
+	session_id VARCHAR(100), 
+	source VARCHAR(30), 
+	created_at DATETIME DEFAULT (CURRENT_TIMESTAMP), 
+	updated_at DATETIME, 
+	"indexed" BOOLEAN, 
+	PRIMARY KEY (id)
+)
+
+
+2026-04-20 10:01:37.306 | INFO     | logging:callHandlers:1706 - [no key 0.00105s] ()
+2026-04-20 10:01:37.313 | INFO     | logging:callHandlers:1706 - CREATE INDEX ix_tickets_id ON tickets (id)
+2026-04-20 10:01:37.313 | INFO     | logging:callHandlers:1706 - [no key 0.00056s] ()
+2026-04-20 10:01:37.319 | INFO     | logging:callHandlers:1706 - CREATE UNIQUE INDEX ix_tickets_ticket_id ON tickets (ticket_id)
+2026-04-20 10:01:37.319 | INFO     | logging:callHandlers:1706 - [no key 0.00057s] ()
+2026-04-20 10:01:37.326 | INFO     | logging:callHandlers:1706 - 
+CREATE TABLE feedback (
+	id INTEGER NOT NULL, 
+	ticket_id VARCHAR(50), 
+	session_id VARCHAR(100), 
+	rating INTEGER NOT NULL, 
+	comment TEXT, 
+	helpful BOOLEAN, 
+	created_at DATETIME DEFAULT (CURRENT_TIMESTAMP), 
+	PRIMARY KEY (id)
+)
+
+
+2026-04-20 10:01:37.327 | INFO     | logging:callHandlers:1706 - [no key 0.00087s] ()
+2026-04-20 10:01:37.331 | INFO     | logging:callHandlers:1706 - CREATE INDEX ix_feedback_ticket_id ON feedback (ticket_id)
+2026-04-20 10:01:37.332 | INFO     | logging:callHandlers:1706 - [no key 0.00055s] ()
+2026-04-20 10:01:37.339 | INFO     | logging:callHandlers:1706 - CREATE INDEX ix_feedback_id ON feedback (id)
+2026-04-20 10:01:37.339 | INFO     | logging:callHandlers:1706 - [no key 0.00051s] ()
+2026-04-20 10:01:37.345 | INFO     | logging:callHandlers:1706 - COMMIT
+2026-04-20 10:01:37.346 | INFO     | logging:callHandlers:1706 - Database initialized
+2026-04-20 10:01:37.347 | INFO     | main:lifespan:58 - Database ready
+2026-04-20 10:01:37.349 | INFO     | logging:callHandlers:1706 - Load pretrained SentenceTransformer: paraphrase-multilingual-mpnet-base-v2
+2026-04-20 10:01:42.270 | INFO     | logging:callHandlers:1706 - Model loaded — dim=768
+2026-04-20 10:01:42.270 | INFO     | main:lifespan:62 - Embedding model loaded
+2026-04-20 10:01:42.271 | INFO     | main:lifespan:67 - No FAISS index found — building from dataset...
+2026-04-20 10:01:42.275 | INFO     | logging:callHandlers:1706 - CSV loaded: 1500 rows
+2026-04-20 10:01:42.280 | INFO     | logging:callHandlers:1706 - BEGIN (implicit)
+2026-04-20 10:01:42.286 | INFO     | logging:callHandlers:1706 - SELECT tickets.id, tickets.ticket_id, tickets.question, tickets.answer, tickets.category, tickets.language, tickets.status, tickets.confidence_score, tickets.session_id, tickets.source, tickets.created_at, tickets.updated_at, tickets."indexed" 
+FROM tickets 
+WHERE tickets.status = ? AND tickets.answer IS NOT NULL AND tickets.answer != ?
+2026-04-20 10:01:42.287 | INFO     | logging:callHandlers:1706 - [generated in 0.00083s] ('resolved', '')
+2026-04-20 10:01:42.289 | INFO     | logging:callHandlers:1706 - Tickets loaded: 0 resolved
+2026-04-20 10:01:42.291 | INFO     | logging:callHandlers:1706 - FAISS index created: IndexFlatIP
+2026-04-20 10:02:02.869 | INFO     | logging:callHandlers:1706 - Saved 1350 vectors
+2026-04-20 10:02:02.870 | INFO     | logging:callHandlers:1706 - Index rebuilt: 1350 vectors
+2026-04-20 10:02:02.870 | INFO     | logging:callHandlers:1706 - Training done: 1350 vectors in 20.6s
+2026-04-20 10:02:02.870 | INFO     | main:lifespan:73 - Index built: 1350 vectors (csv=1500, tickets=0)
+2026-04-20 10:02:02.871 | INFO     | logging:callHandlers:1706 - ROLLBACK
+2026-04-20 10:02:02.873 | INFO     | main:lifespan:82 - RAG pipeline ready
+2026-04-20 10:02:02.873 | INFO     | main:lifespan:84 - API running at http://0.0.0.0:8000
+2026-04-20 10:02:02.873 | INFO     | main:lifespan:85 - Docs: http://0.0.0.0:8000/docs
+2026-04-20 10:02:02.874 | INFO     | main:lifespan:86 - ============================================================
+2026-04-20 10:03:15.090 | INFO     | logging:callHandlers:1706 - Saved 1350 vectors
+2026-04-20 10:03:15.090 | INFO     | logging:callHandlers:1706 - Database connections closed
+2026-04-20 10:03:15.091 | INFO     | main:lifespan:93 - Shutdown complete
+2026-04-20 10:03:23.002 | INFO     | main:lifespan:53 - ============================================================
+2026-04-20 10:03:23.003 | INFO     | main:lifespan:54 - Starting Moviroo AI Chatbot v1.0.0
+2026-04-20 10:03:23.115 | INFO     | logging:callHandlers:1706 - select pg_catalog.version()
+2026-04-20 10:03:23.116 | INFO     | logging:callHandlers:1706 - [raw sql] ()
+2026-04-20 10:03:23.119 | INFO     | logging:callHandlers:1706 - select current_schema()
+2026-04-20 10:03:23.120 | INFO     | logging:callHandlers:1706 - [raw sql] ()
+2026-04-20 10:03:23.123 | INFO     | logging:callHandlers:1706 - show standard_conforming_strings
+2026-04-20 10:03:23.123 | INFO     | logging:callHandlers:1706 - [raw sql] ()
+2026-04-20 10:03:23.125 | INFO     | logging:callHandlers:1706 - BEGIN (implicit)
+2026-04-20 10:03:23.129 | INFO     | logging:callHandlers:1706 - SELECT pg_catalog.pg_class.relname 
+FROM pg_catalog.pg_class JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_class.relnamespace 
+WHERE pg_catalog.pg_class.relname = $1::VARCHAR AND pg_catalog.pg_class.relkind = ANY (ARRAY[$2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR]) AND pg_catalog.pg_table_is_visible(pg_catalog.pg_class.oid) AND pg_catalog.pg_namespace.nspname != $7::VARCHAR
+2026-04-20 10:03:23.130 | INFO     | logging:callHandlers:1706 - [generated in 0.00083s] ('tickets', 'r', 'p', 'f', 'v', 'm', 'pg_catalog')
+2026-04-20 10:03:23.150 | INFO     | logging:callHandlers:1706 - SELECT pg_catalog.pg_class.relname 
+FROM pg_catalog.pg_class JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_class.relnamespace 
+WHERE pg_catalog.pg_class.relname = $1::VARCHAR AND pg_catalog.pg_class.relkind = ANY (ARRAY[$2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR]) AND pg_catalog.pg_table_is_visible(pg_catalog.pg_class.oid) AND pg_catalog.pg_namespace.nspname != $7::VARCHAR
+2026-04-20 10:03:23.150 | INFO     | logging:callHandlers:1706 - [cached since 0.02181s ago] ('feedback', 'r', 'p', 'f', 'v', 'm', 'pg_catalog')
+2026-04-20 10:03:23.152 | INFO     | logging:callHandlers:1706 - COMMIT
+2026-04-20 10:03:23.154 | INFO     | logging:callHandlers:1706 - Database initialized
+2026-04-20 10:03:23.154 | INFO     | main:lifespan:58 - Database ready
+2026-04-20 10:03:23.157 | INFO     | logging:callHandlers:1706 - Load pretrained SentenceTransformer: paraphrase-multilingual-mpnet-base-v2
+2026-04-20 10:03:28.143 | INFO     | logging:callHandlers:1706 - Model loaded — dim=768
+2026-04-20 10:03:28.143 | INFO     | main:lifespan:62 - Embedding model loaded
+2026-04-20 10:03:28.171 | INFO     | logging:callHandlers:1706 - Loaded 1350 vectors from disk
+2026-04-20 10:03:28.171 | INFO     | main:lifespan:78 - FAISS index loaded: 1350 vectors
+2026-04-20 10:03:28.171 | INFO     | main:lifespan:82 - RAG pipeline ready
+2026-04-20 10:03:28.171 | INFO     | main:lifespan:84 - API running at http://0.0.0.0:8000
+2026-04-20 10:03:28.172 | INFO     | main:lifespan:85 - Docs: http://0.0.0.0:8000/docs
+2026-04-20 10:03:28.172 | INFO     | main:lifespan:86 - ============================================================
+2026-04-20 10:05:31.709 | INFO     | main:log_requests:136 - GET /docs → 200 (0ms)
+2026-04-20 10:05:34.678 | INFO     | main:log_requests:136 - GET /openapi.json → 200 (10ms)
+2026-04-20 10:06:02.070 | INFO     | logging:callHandlers:1706 - FAISS results: 5 chunks for 'i have problème payemment '
+2026-04-20 10:06:04.371 | WARNING  | logging:callHandlers:1706 - Ollama not reachable — using direct chunk fallback
+2026-04-20 10:06:04.372 | INFO     | main:log_requests:136 - POST /chat/ → 200 (2431ms)
+2026-04-20 10:06:26.145 | INFO     | logging:callHandlers:1706 - FAISS results: 5 chunks for 'bonjour'
+2026-04-20 10:06:28.428 | WARNING  | logging:callHandlers:1706 - Ollama not reachable — using direct chunk fallback
+2026-04-20 10:06:28.428 | INFO     | main:log_requests:136 - POST /chat/ → 200 (2324ms)
+2026-04-20 10:18:18.215 | INFO     | logging:callHandlers:1706 - Saved 1350 vectors
+2026-04-20 10:18:18.220 | INFO     | logging:callHandlers:1706 - Database connections closed
+2026-04-20 10:18:18.221 | INFO     | main:lifespan:93 - Shutdown complete
+2026-04-20 10:18:26.506 | INFO     | main:lifespan:53 - ============================================================
+2026-04-20 10:18:26.506 | INFO     | main:lifespan:54 - Starting Moviroo AI Chatbot v1.0.0
+2026-04-20 10:18:26.571 | INFO     | logging:callHandlers:1706 - select pg_catalog.version()
+2026-04-20 10:18:26.571 | INFO     | logging:callHandlers:1706 - [raw sql] ()
+2026-04-20 10:18:26.574 | INFO     | logging:callHandlers:1706 - select current_schema()
+2026-04-20 10:18:26.575 | INFO     | logging:callHandlers:1706 - [raw sql] ()
+2026-04-20 10:18:26.576 | INFO     | logging:callHandlers:1706 - show standard_conforming_strings
+2026-04-20 10:18:26.577 | INFO     | logging:callHandlers:1706 - [raw sql] ()
+2026-04-20 10:18:26.579 | INFO     | logging:callHandlers:1706 - BEGIN (implicit)
+2026-04-20 10:18:26.581 | INFO     | logging:callHandlers:1706 - SELECT pg_catalog.pg_class.relname 
+FROM pg_catalog.pg_class JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_class.relnamespace 
+WHERE pg_catalog.pg_class.relname = $1::VARCHAR AND pg_catalog.pg_class.relkind = ANY (ARRAY[$2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR]) AND pg_catalog.pg_table_is_visible(pg_catalog.pg_class.oid) AND pg_catalog.pg_namespace.nspname != $7::VARCHAR
+2026-04-20 10:18:26.582 | INFO     | logging:callHandlers:1706 - [generated in 0.00074s] ('tickets', 'r', 'p', 'f', 'v', 'm', 'pg_catalog')
+2026-04-20 10:18:26.587 | INFO     | logging:callHandlers:1706 - SELECT pg_catalog.pg_class.relname 
+FROM pg_catalog.pg_class JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_class.relnamespace 
+WHERE pg_catalog.pg_class.relname = $1::VARCHAR AND pg_catalog.pg_class.relkind = ANY (ARRAY[$2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR]) AND pg_catalog.pg_table_is_visible(pg_catalog.pg_class.oid) AND pg_catalog.pg_namespace.nspname != $7::VARCHAR
+2026-04-20 10:18:26.587 | INFO     | logging:callHandlers:1706 - [cached since 0.006026s ago] ('feedback', 'r', 'p', 'f', 'v', 'm', 'pg_catalog')
+2026-04-20 10:18:26.588 | INFO     | logging:callHandlers:1706 - COMMIT
+2026-04-20 10:18:26.589 | INFO     | logging:callHandlers:1706 - Database initialized
+2026-04-20 10:18:26.589 | INFO     | main:lifespan:58 - Database ready
+2026-04-20 10:18:26.593 | INFO     | logging:callHandlers:1706 - Load pretrained SentenceTransformer: paraphrase-multilingual-mpnet-base-v2
+2026-04-20 10:18:32.857 | INFO     | logging:callHandlers:1706 - Model loaded — dim=768
+2026-04-20 10:18:32.858 | INFO     | main:lifespan:62 - Embedding model loaded
+2026-04-20 10:18:32.880 | INFO     | logging:callHandlers:1706 - Loaded 1350 vectors from disk
+2026-04-20 10:18:32.881 | INFO     | main:lifespan:78 - FAISS index loaded: 1350 vectors
+2026-04-20 10:18:32.881 | INFO     | main:lifespan:82 - RAG pipeline ready
+2026-04-20 10:18:32.881 | INFO     | main:lifespan:84 - API running at http://0.0.0.0:8000
+2026-04-20 10:18:32.881 | INFO     | main:lifespan:85 - Docs: http://0.0.0.0:8000/docs
+2026-04-20 10:18:32.881 | INFO     | main:lifespan:86 - ============================================================
+2026-04-20 10:18:54.294 | INFO     | logging:callHandlers:1706 - Saved 1350 vectors
+2026-04-20 10:18:54.297 | INFO     | logging:callHandlers:1706 - Database connections closed
+2026-04-20 10:18:54.297 | INFO     | main:lifespan:93 - Shutdown complete
+2026-04-20 10:20:04.975 | INFO     | main:lifespan:53 - ============================================================
+2026-04-20 10:20:04.975 | INFO     | main:lifespan:54 - Starting Moviroo AI Chatbot v1.0.0
+2026-04-20 10:20:05.034 | INFO     | logging:callHandlers:1706 - select pg_catalog.version()
+2026-04-20 10:20:05.035 | INFO     | logging:callHandlers:1706 - [raw sql] ()
+2026-04-20 10:20:05.036 | INFO     | logging:callHandlers:1706 - select current_schema()
+2026-04-20 10:20:05.037 | INFO     | logging:callHandlers:1706 - [raw sql] ()
+2026-04-20 10:20:05.038 | INFO     | logging:callHandlers:1706 - show standard_conforming_strings
+2026-04-20 10:20:05.038 | INFO     | logging:callHandlers:1706 - [raw sql] ()
+2026-04-20 10:20:05.040 | INFO     | logging:callHandlers:1706 - BEGIN (implicit)
+2026-04-20 10:20:05.042 | INFO     | logging:callHandlers:1706 - SELECT pg_catalog.pg_class.relname 
+FROM pg_catalog.pg_class JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_class.relnamespace 
+WHERE pg_catalog.pg_class.relname = $1::VARCHAR AND pg_catalog.pg_class.relkind = ANY (ARRAY[$2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR]) AND pg_catalog.pg_table_is_visible(pg_catalog.pg_class.oid) AND pg_catalog.pg_namespace.nspname != $7::VARCHAR
+2026-04-20 10:20:05.043 | INFO     | logging:callHandlers:1706 - [generated in 0.00053s] ('tickets', 'r', 'p', 'f', 'v', 'm', 'pg_catalog')
+2026-04-20 10:20:05.047 | INFO     | logging:callHandlers:1706 - SELECT pg_catalog.pg_class.relname 
+FROM pg_catalog.pg_class JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_class.relnamespace 
+WHERE pg_catalog.pg_class.relname = $1::VARCHAR AND pg_catalog.pg_class.relkind = ANY (ARRAY[$2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR]) AND pg_catalog.pg_table_is_visible(pg_catalog.pg_class.oid) AND pg_catalog.pg_namespace.nspname != $7::VARCHAR
+2026-04-20 10:20:05.048 | INFO     | logging:callHandlers:1706 - [cached since 0.005676s ago] ('feedback', 'r', 'p', 'f', 'v', 'm', 'pg_catalog')
+2026-04-20 10:20:05.048 | INFO     | logging:callHandlers:1706 - COMMIT
+2026-04-20 10:20:05.049 | INFO     | logging:callHandlers:1706 - Database initialized
+2026-04-20 10:20:05.050 | INFO     | main:lifespan:58 - Database ready
+2026-04-20 10:20:05.052 | INFO     | logging:callHandlers:1706 - Load pretrained SentenceTransformer: paraphrase-multilingual-mpnet-base-v2
+2026-04-20 10:20:11.720 | INFO     | logging:callHandlers:1706 - Model loaded — dim=768
+2026-04-20 10:20:11.720 | INFO     | main:lifespan:62 - Embedding model loaded
+2026-04-20 10:20:11.744 | INFO     | logging:callHandlers:1706 - Loaded 1350 vectors from disk
+2026-04-20 10:20:11.744 | INFO     | main:lifespan:78 - FAISS index loaded: 1350 vectors
+2026-04-20 10:20:11.744 | INFO     | main:lifespan:82 - RAG pipeline ready
+2026-04-20 10:20:11.745 | INFO     | main:lifespan:84 - API running at http://0.0.0.0:8000
+2026-04-20 10:20:11.745 | INFO     | main:lifespan:85 - Docs: http://0.0.0.0:8000/docs
+2026-04-20 10:20:11.745 | INFO     | main:lifespan:86 - ============================================================
+2026-04-20 10:23:50.193 | INFO     | main:lifespan:53 - ============================================================
+2026-04-20 10:23:50.193 | INFO     | main:lifespan:54 - Starting Moviroo AI Chatbot v1.0.0
+2026-04-20 10:23:50.252 | INFO     | logging:callHandlers:1706 - select pg_catalog.version()
+2026-04-20 10:23:50.252 | INFO     | logging:callHandlers:1706 - [raw sql] ()
+2026-04-20 10:23:50.254 | INFO     | logging:callHandlers:1706 - select current_schema()
+2026-04-20 10:23:50.255 | INFO     | logging:callHandlers:1706 - [raw sql] ()
+2026-04-20 10:23:50.255 | INFO     | logging:callHandlers:1706 - show standard_conforming_strings
+2026-04-20 10:23:50.255 | INFO     | logging:callHandlers:1706 - [raw sql] ()
+2026-04-20 10:23:50.257 | INFO     | logging:callHandlers:1706 - BEGIN (implicit)
+2026-04-20 10:23:50.260 | INFO     | logging:callHandlers:1706 - SELECT pg_catalog.pg_class.relname 
+FROM pg_catalog.pg_class JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_class.relnamespace 
+WHERE pg_catalog.pg_class.relname = $1::VARCHAR AND pg_catalog.pg_class.relkind = ANY (ARRAY[$2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR]) AND pg_catalog.pg_table_is_visible(pg_catalog.pg_class.oid) AND pg_catalog.pg_namespace.nspname != $7::VARCHAR
+2026-04-20 10:23:50.260 | INFO     | logging:callHandlers:1706 - [generated in 0.00076s] ('tickets', 'r', 'p', 'f', 'v', 'm', 'pg_catalog')
+2026-04-20 10:23:50.265 | INFO     | logging:callHandlers:1706 - SELECT pg_catalog.pg_class.relname 
+FROM pg_catalog.pg_class JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_class.relnamespace 
+WHERE pg_catalog.pg_class.relname = $1::VARCHAR AND pg_catalog.pg_class.relkind = ANY (ARRAY[$2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR]) AND pg_catalog.pg_table_is_visible(pg_catalog.pg_class.oid) AND pg_catalog.pg_namespace.nspname != $7::VARCHAR
+2026-04-20 10:23:50.266 | INFO     | logging:callHandlers:1706 - [cached since 0.006126s ago] ('feedback', 'r', 'p', 'f', 'v', 'm', 'pg_catalog')
+2026-04-20 10:23:50.267 | INFO     | logging:callHandlers:1706 - COMMIT
+2026-04-20 10:23:50.268 | INFO     | logging:callHandlers:1706 - Database initialized
+2026-04-20 10:23:50.268 | INFO     | main:lifespan:58 - Database ready
+2026-04-20 10:23:50.271 | INFO     | logging:callHandlers:1706 - Load pretrained SentenceTransformer: paraphrase-multilingual-mpnet-base-v2
+2026-04-20 10:23:57.225 | INFO     | logging:callHandlers:1706 - Model loaded — dim=768
+2026-04-20 10:23:57.226 | INFO     | main:lifespan:62 - Embedding model loaded
+2026-04-20 10:23:57.252 | INFO     | logging:callHandlers:1706 - Loaded 1350 vectors from disk
+2026-04-20 10:23:57.253 | INFO     | main:lifespan:78 - FAISS index loaded: 1350 vectors
+2026-04-20 10:23:57.253 | INFO     | main:lifespan:82 - RAG pipeline ready
+2026-04-20 10:23:57.253 | INFO     | main:lifespan:84 - API running at http://0.0.0.0:8000
+2026-04-20 10:23:57.254 | INFO     | main:lifespan:85 - Docs: http://0.0.0.0:8000/docs
+2026-04-20 10:23:57.254 | INFO     | main:lifespan:86 - ============================================================
+2026-04-20 10:24:05.222 | INFO     | logging:callHandlers:1706 - Saved 1350 vectors
+2026-04-20 10:24:05.226 | INFO     | logging:callHandlers:1706 - Database connections closed
+2026-04-20 10:24:05.226 | INFO     | main:lifespan:93 - Shutdown complete
+2026-04-20 10:24:12.521 | INFO     | main:lifespan:53 - ============================================================
+2026-04-20 10:24:12.521 | INFO     | main:lifespan:54 - Starting Moviroo AI Chatbot v1.0.0
+2026-04-20 10:24:12.580 | INFO     | logging:callHandlers:1706 - select pg_catalog.version()
+2026-04-20 10:24:12.581 | INFO     | logging:callHandlers:1706 - [raw sql] ()
+2026-04-20 10:24:12.582 | INFO     | logging:callHandlers:1706 - select current_schema()
+2026-04-20 10:24:12.583 | INFO     | logging:callHandlers:1706 - [raw sql] ()
+2026-04-20 10:24:12.584 | INFO     | logging:callHandlers:1706 - show standard_conforming_strings
+2026-04-20 10:24:12.584 | INFO     | logging:callHandlers:1706 - [raw sql] ()
+2026-04-20 10:24:12.585 | INFO     | logging:callHandlers:1706 - BEGIN (implicit)
+2026-04-20 10:24:12.588 | INFO     | logging:callHandlers:1706 - SELECT pg_catalog.pg_class.relname 
+FROM pg_catalog.pg_class JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_class.relnamespace 
+WHERE pg_catalog.pg_class.relname = $1::VARCHAR AND pg_catalog.pg_class.relkind = ANY (ARRAY[$2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR]) AND pg_catalog.pg_table_is_visible(pg_catalog.pg_class.oid) AND pg_catalog.pg_namespace.nspname != $7::VARCHAR
+2026-04-20 10:24:12.589 | INFO     | logging:callHandlers:1706 - [generated in 0.00058s] ('tickets', 'r', 'p', 'f', 'v', 'm', 'pg_catalog')
+2026-04-20 10:24:12.593 | INFO     | logging:callHandlers:1706 - SELECT pg_catalog.pg_class.relname 
+FROM pg_catalog.pg_class JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_class.relnamespace 
+WHERE pg_catalog.pg_class.relname = $1::VARCHAR AND pg_catalog.pg_class.relkind = ANY (ARRAY[$2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR]) AND pg_catalog.pg_table_is_visible(pg_catalog.pg_class.oid) AND pg_catalog.pg_namespace.nspname != $7::VARCHAR
+2026-04-20 10:24:12.593 | INFO     | logging:callHandlers:1706 - [cached since 0.005166s ago] ('feedback', 'r', 'p', 'f', 'v', 'm', 'pg_catalog')
+2026-04-20 10:24:12.595 | INFO     | logging:callHandlers:1706 - COMMIT
+2026-04-20 10:24:12.596 | INFO     | logging:callHandlers:1706 - Database initialized
+2026-04-20 10:24:12.596 | INFO     | main:lifespan:58 - Database ready
+2026-04-20 10:24:12.597 | INFO     | logging:callHandlers:1706 - Load pretrained SentenceTransformer: paraphrase-multilingual-mpnet-base-v2
+2026-04-20 10:24:17.158 | INFO     | logging:callHandlers:1706 - Model loaded — dim=768
+2026-04-20 10:24:17.158 | INFO     | main:lifespan:62 - Embedding model loaded
+2026-04-20 10:24:17.179 | INFO     | logging:callHandlers:1706 - Loaded 1350 vectors from disk
+2026-04-20 10:24:17.179 | INFO     | main:lifespan:78 - FAISS index loaded: 1350 vectors
+2026-04-20 10:24:17.179 | INFO     | main:lifespan:82 - RAG pipeline ready
+2026-04-20 10:24:17.179 | INFO     | main:lifespan:84 - API running at http://0.0.0.0:8000
+2026-04-20 10:24:17.180 | INFO     | main:lifespan:85 - Docs: http://0.0.0.0:8000/docs
+2026-04-20 10:24:17.180 | INFO     | main:lifespan:86 - ============================================================
+2026-04-20 10:43:22.677 | INFO     | logging:callHandlers:1706 - Saved 1350 vectors
+2026-04-20 10:43:22.686 | INFO     | logging:callHandlers:1706 - Database connections closed
+2026-04-20 10:43:22.686 | INFO     | main:lifespan:93 - Shutdown complete
+2026-04-20 10:43:55.970 | INFO     | main:lifespan:242 - ============================================================
+2026-04-20 10:43:55.970 | INFO     | main:lifespan:243 - Starting Moviroo AI Chatbot v1.0.0
+2026-04-20 10:43:56.044 | INFO     | logging:callHandlers:1706 - select pg_catalog.version()
+2026-04-20 10:43:56.045 | INFO     | logging:callHandlers:1706 - [raw sql] ()
+2026-04-20 10:43:56.046 | INFO     | logging:callHandlers:1706 - select current_schema()
+2026-04-20 10:43:56.046 | INFO     | logging:callHandlers:1706 - [raw sql] ()
+2026-04-20 10:43:56.046 | INFO     | logging:callHandlers:1706 - show standard_conforming_strings
+2026-04-20 10:43:56.046 | INFO     | logging:callHandlers:1706 - [raw sql] ()
+2026-04-20 10:43:56.046 | INFO     | logging:callHandlers:1706 - BEGIN (implicit)
+2026-04-20 10:43:56.046 | INFO     | logging:callHandlers:1706 - SELECT pg_catalog.pg_class.relname 
+FROM pg_catalog.pg_class JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_class.relnamespace 
+WHERE pg_catalog.pg_class.relname = $1::VARCHAR AND pg_catalog.pg_class.relkind = ANY (ARRAY[$2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR]) AND pg_catalog.pg_table_is_visible(pg_catalog.pg_class.oid) AND pg_catalog.pg_namespace.nspname != $7::VARCHAR
+2026-04-20 10:43:56.053 | INFO     | logging:callHandlers:1706 - [generated in 0.00059s] ('tickets', 'r', 'p', 'f', 'v', 'm', 'pg_catalog')
+2026-04-20 10:43:56.064 | INFO     | logging:callHandlers:1706 - SELECT pg_catalog.pg_class.relname 
+FROM pg_catalog.pg_class JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_class.relnamespace 
+WHERE pg_catalog.pg_class.relname = $1::VARCHAR AND pg_catalog.pg_class.relkind = ANY (ARRAY[$2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR]) AND pg_catalog.pg_table_is_visible(pg_catalog.pg_class.oid) AND pg_catalog.pg_namespace.nspname != $7::VARCHAR
+2026-04-20 10:43:56.065 | INFO     | logging:callHandlers:1706 - [cached since 0.01282s ago] ('feedback', 'r', 'p', 'f', 'v', 'm', 'pg_catalog')
+2026-04-20 10:43:56.066 | INFO     | logging:callHandlers:1706 - COMMIT
+2026-04-20 10:43:56.067 | INFO     | logging:callHandlers:1706 - Database initialized
+2026-04-20 10:43:56.067 | INFO     | main:lifespan:247 - Database ready
+2026-04-20 10:43:56.070 | INFO     | logging:callHandlers:1706 - Load pretrained SentenceTransformer: paraphrase-multilingual-mpnet-base-v2
+2026-04-20 10:44:06.319 | INFO     | logging:callHandlers:1706 - Model loaded — dim=768
+2026-04-20 10:44:06.320 | INFO     | main:lifespan:251 - Embedding model loaded
+2026-04-20 10:44:06.345 | INFO     | logging:callHandlers:1706 - Loaded 1350 vectors from disk
+2026-04-20 10:44:06.345 | INFO     | main:lifespan:267 - FAISS index loaded: 1350 vectors
+2026-04-20 10:44:06.346 | INFO     | main:lifespan:271 - RAG pipeline ready
+2026-04-20 10:44:06.346 | INFO     | main:lifespan:273 - API running at http://0.0.0.0:8000
+2026-04-20 10:44:06.346 | INFO     | main:lifespan:274 - Docs: http://0.0.0.0:8000/docs
+2026-04-20 10:44:06.346 | INFO     | main:lifespan:275 - ============================================================
+2026-04-20 10:56:04.131 | INFO     | logging:callHandlers:1706 - Saved 1350 vectors
+2026-04-20 10:56:04.150 | INFO     | logging:callHandlers:1706 - Database connections closed
+2026-04-20 10:56:04.151 | INFO     | main:lifespan:93 - Shutdown complete
+2026-04-20 10:56:14.297 | INFO     | main:lifespan:242 - ============================================================
+2026-04-20 10:56:14.297 | INFO     | main:lifespan:243 - Starting Moviroo AI Chatbot v1.0.0
+2026-04-20 10:56:14.367 | INFO     | logging:callHandlers:1706 - select pg_catalog.version()
+2026-04-20 10:56:14.367 | INFO     | logging:callHandlers:1706 - [raw sql] ()
+2026-04-20 10:56:14.369 | INFO     | logging:callHandlers:1706 - select current_schema()
+2026-04-20 10:56:14.370 | INFO     | logging:callHandlers:1706 - [raw sql] ()
+2026-04-20 10:56:14.371 | INFO     | logging:callHandlers:1706 - show standard_conforming_strings
+2026-04-20 10:56:14.371 | INFO     | logging:callHandlers:1706 - [raw sql] ()
+2026-04-20 10:56:14.373 | INFO     | logging:callHandlers:1706 - BEGIN (implicit)
+2026-04-20 10:56:14.375 | INFO     | logging:callHandlers:1706 - SELECT pg_catalog.pg_class.relname 
+FROM pg_catalog.pg_class JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_class.relnamespace 
+WHERE pg_catalog.pg_class.relname = $1::VARCHAR AND pg_catalog.pg_class.relkind = ANY (ARRAY[$2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR]) AND pg_catalog.pg_table_is_visible(pg_catalog.pg_class.oid) AND pg_catalog.pg_namespace.nspname != $7::VARCHAR
+2026-04-20 10:56:14.376 | INFO     | logging:callHandlers:1706 - [generated in 0.00090s] ('tickets', 'r', 'p', 'f', 'v', 'm', 'pg_catalog')
+2026-04-20 10:56:14.383 | INFO     | logging:callHandlers:1706 - SELECT pg_catalog.pg_class.relname 
+FROM pg_catalog.pg_class JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_class.relnamespace 
+WHERE pg_catalog.pg_class.relname = $1::VARCHAR AND pg_catalog.pg_class.relkind = ANY (ARRAY[$2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR]) AND pg_catalog.pg_table_is_visible(pg_catalog.pg_class.oid) AND pg_catalog.pg_namespace.nspname != $7::VARCHAR
+2026-04-20 10:56:14.383 | INFO     | logging:callHandlers:1706 - [cached since 0.007821s ago] ('feedback', 'r', 'p', 'f', 'v', 'm', 'pg_catalog')
+2026-04-20 10:56:14.385 | INFO     | logging:callHandlers:1706 - COMMIT
+2026-04-20 10:56:14.386 | INFO     | logging:callHandlers:1706 - Database initialized
+2026-04-20 10:56:14.386 | INFO     | main:lifespan:247 - Database ready
+2026-04-20 10:56:14.389 | INFO     | logging:callHandlers:1706 - Load pretrained SentenceTransformer: paraphrase-multilingual-mpnet-base-v2
+2026-04-20 10:56:28.610 | INFO     | logging:callHandlers:1706 - Model loaded — dim=768
+2026-04-20 10:56:28.610 | INFO     | main:lifespan:251 - Embedding model loaded
+2026-04-20 10:56:28.640 | INFO     | logging:callHandlers:1706 - Loaded 1350 vectors from disk
+2026-04-20 10:56:28.640 | INFO     | main:lifespan:267 - FAISS index loaded: 1350 vectors
+2026-04-20 10:56:28.641 | INFO     | main:lifespan:271 - RAG pipeline ready
+2026-04-20 10:56:28.641 | INFO     | main:lifespan:273 - API running at http://0.0.0.0:8000
+2026-04-20 10:56:28.641 | INFO     | main:lifespan:274 - Docs: http://0.0.0.0:8000/docs
+2026-04-20 10:56:28.642 | INFO     | main:lifespan:275 - ============================================================
+2026-04-20 11:21:47.593 | INFO     | logging:callHandlers:1706 - FAISS results: 5 chunks for 'i have probeleme in app tres lent'
+2026-04-20 11:21:48.619 | INFO     | logging:callHandlers:1706 - HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 404 Not Found"
+2026-04-20 11:21:48.622 | ERROR    | logging:callHandlers:1706 - Ollama HTTP error: 404
+2026-04-20 11:21:48.659 | INFO     | main:log_requests:325 - POST /chat/ → 200 (7317ms)
+2026-04-20 11:37:37.064 | INFO     | logging:callHandlers:1706 - Saved 1350 vectors
+2026-04-20 11:37:37.140 | INFO     | logging:callHandlers:1706 - Database connections closed
+2026-04-20 11:37:37.141 | INFO     | main:lifespan:282 - Shutdown complete
+2026-04-20 11:38:21.154 | INFO     | main:lifespan:242 - ============================================================
+2026-04-20 11:38:21.155 | INFO     | main:lifespan:243 - Starting Moviroo AI Chatbot v1.0.0
+2026-04-20 11:38:21.256 | INFO     | logging:callHandlers:1706 - select pg_catalog.version()
+2026-04-20 11:38:21.256 | INFO     | logging:callHandlers:1706 - [raw sql] ()
+2026-04-20 11:38:21.260 | INFO     | logging:callHandlers:1706 - select current_schema()
+2026-04-20 11:38:21.260 | INFO     | logging:callHandlers:1706 - [raw sql] ()
+2026-04-20 11:38:21.263 | INFO     | logging:callHandlers:1706 - show standard_conforming_strings
+2026-04-20 11:38:21.264 | INFO     | logging:callHandlers:1706 - [raw sql] ()
+2026-04-20 11:38:21.265 | INFO     | logging:callHandlers:1706 - BEGIN (implicit)
+2026-04-20 11:38:21.268 | INFO     | logging:callHandlers:1706 - SELECT pg_catalog.pg_class.relname 
+FROM pg_catalog.pg_class JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_class.relnamespace 
+WHERE pg_catalog.pg_class.relname = $1::VARCHAR AND pg_catalog.pg_class.relkind = ANY (ARRAY[$2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR]) AND pg_catalog.pg_table_is_visible(pg_catalog.pg_class.oid) AND pg_catalog.pg_namespace.nspname != $7::VARCHAR
+2026-04-20 11:38:21.269 | INFO     | logging:callHandlers:1706 - [generated in 0.00060s] ('tickets', 'r', 'p', 'f', 'v', 'm', 'pg_catalog')
+2026-04-20 11:38:21.278 | INFO     | logging:callHandlers:1706 - SELECT pg_catalog.pg_class.relname 
+FROM pg_catalog.pg_class JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_class.relnamespace 
+WHERE pg_catalog.pg_class.relname = $1::VARCHAR AND pg_catalog.pg_class.relkind = ANY (ARRAY[$2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR]) AND pg_catalog.pg_table_is_visible(pg_catalog.pg_class.oid) AND pg_catalog.pg_namespace.nspname != $7::VARCHAR
+2026-04-20 11:38:21.279 | INFO     | logging:callHandlers:1706 - [cached since 0.01063s ago] ('feedback', 'r', 'p', 'f', 'v', 'm', 'pg_catalog')
+2026-04-20 11:38:21.280 | INFO     | logging:callHandlers:1706 - COMMIT
+2026-04-20 11:38:21.281 | INFO     | logging:callHandlers:1706 - Database initialized
+2026-04-20 11:38:21.281 | INFO     | main:lifespan:247 - Database ready
+2026-04-20 11:38:21.284 | INFO     | logging:callHandlers:1706 - Load pretrained SentenceTransformer: paraphrase-multilingual-mpnet-base-v2
+2026-04-20 11:38:32.986 | INFO     | logging:callHandlers:1706 - Model loaded — dim=768
+2026-04-20 11:38:32.986 | INFO     | main:lifespan:251 - Embedding model loaded
+2026-04-20 11:38:33.014 | INFO     | logging:callHandlers:1706 - Loaded 1350 vectors from disk
+2026-04-20 11:38:33.014 | INFO     | main:lifespan:267 - FAISS index loaded: 1350 vectors
+2026-04-20 11:38:33.014 | INFO     | main:lifespan:271 - RAG pipeline ready
+2026-04-20 11:38:33.014 | INFO     | main:lifespan:273 - API running at http://0.0.0.0:8000
+2026-04-20 11:38:33.014 | INFO     | main:lifespan:274 - Docs: http://0.0.0.0:8000/docs
+2026-04-20 11:38:33.015 | INFO     | main:lifespan:275 - ============================================================
+2026-04-20 11:38:33.020 | INFO     | logging:callHandlers:1706 - Saved 1350 vectors
+2026-04-20 11:38:33.024 | INFO     | logging:callHandlers:1706 - Database connections closed
+2026-04-20 11:38:33.025 | INFO     | main:lifespan:282 - Shutdown complete
+2026-04-20 11:39:24.213 | INFO     | main:lifespan:242 - ============================================================
+2026-04-20 11:39:24.213 | INFO     | main:lifespan:243 - Starting Moviroo AI Chatbot v1.0.0
+2026-04-20 11:39:24.392 | INFO     | logging:callHandlers:1706 - select pg_catalog.version()
+2026-04-20 11:39:24.392 | INFO     | logging:callHandlers:1706 - [raw sql] ()
+2026-04-20 11:39:24.393 | INFO     | logging:callHandlers:1706 - select current_schema()
+2026-04-20 11:39:24.393 | INFO     | logging:callHandlers:1706 - [raw sql] ()
+2026-04-20 11:39:24.395 | INFO     | logging:callHandlers:1706 - show standard_conforming_strings
+2026-04-20 11:39:24.395 | INFO     | logging:callHandlers:1706 - [raw sql] ()
+2026-04-20 11:39:24.396 | INFO     | logging:callHandlers:1706 - BEGIN (implicit)
+2026-04-20 11:39:24.399 | INFO     | logging:callHandlers:1706 - SELECT pg_catalog.pg_class.relname 
+FROM pg_catalog.pg_class JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_class.relnamespace 
+WHERE pg_catalog.pg_class.relname = $1::VARCHAR AND pg_catalog.pg_class.relkind = ANY (ARRAY[$2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR]) AND pg_catalog.pg_table_is_visible(pg_catalog.pg_class.oid) AND pg_catalog.pg_namespace.nspname != $7::VARCHAR
+2026-04-20 11:39:24.399 | INFO     | logging:callHandlers:1706 - [generated in 0.00059s] ('tickets', 'r', 'p', 'f', 'v', 'm', 'pg_catalog')
+2026-04-20 11:39:24.404 | INFO     | logging:callHandlers:1706 - SELECT pg_catalog.pg_class.relname 
+FROM pg_catalog.pg_class JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_class.relnamespace 
+WHERE pg_catalog.pg_class.relname = $1::VARCHAR AND pg_catalog.pg_class.relkind = ANY (ARRAY[$2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR]) AND pg_catalog.pg_table_is_visible(pg_catalog.pg_class.oid) AND pg_catalog.pg_namespace.nspname != $7::VARCHAR
+2026-04-20 11:39:24.405 | INFO     | logging:callHandlers:1706 - [cached since 0.005753s ago] ('feedback', 'r', 'p', 'f', 'v', 'm', 'pg_catalog')
+2026-04-20 11:39:24.406 | INFO     | logging:callHandlers:1706 - COMMIT
+2026-04-20 11:39:24.407 | INFO     | logging:callHandlers:1706 - Database initialized
+2026-04-20 11:39:24.407 | INFO     | main:lifespan:247 - Database ready
+2026-04-20 11:39:24.410 | INFO     | logging:callHandlers:1706 - Load pretrained SentenceTransformer: paraphrase-multilingual-mpnet-base-v2
+2026-04-20 11:39:36.083 | INFO     | logging:callHandlers:1706 - Model loaded — dim=768
+2026-04-20 11:39:36.085 | INFO     | main:lifespan:251 - Embedding model loaded
+2026-04-20 11:39:36.134 | INFO     | logging:callHandlers:1706 - Loaded 1350 vectors from disk
+2026-04-20 11:39:36.134 | INFO     | main:lifespan:267 - FAISS index loaded: 1350 vectors
+2026-04-20 11:39:36.136 | INFO     | main:lifespan:271 - RAG pipeline ready
+2026-04-20 11:39:36.136 | INFO     | main:lifespan:273 - API running at http://0.0.0.0:8000
+2026-04-20 11:39:36.136 | INFO     | main:lifespan:274 - Docs: http://0.0.0.0:8000/docs
+2026-04-20 11:39:36.137 | INFO     | main:lifespan:275 - ============================================================
+2026-04-20 11:39:36.149 | INFO     | logging:callHandlers:1706 - Saved 1350 vectors
+2026-04-20 11:39:36.154 | INFO     | logging:callHandlers:1706 - Database connections closed
+2026-04-20 11:39:36.155 | INFO     | main:lifespan:282 - Shutdown complete
+2026-04-20 11:41:15.181 | INFO     | main:lifespan:242 - ============================================================
+2026-04-20 11:41:15.181 | INFO     | main:lifespan:243 - Starting Moviroo AI Chatbot v1.0.0
+2026-04-20 11:41:15.245 | INFO     | logging:callHandlers:1706 - select pg_catalog.version()
+2026-04-20 11:41:15.246 | INFO     | logging:callHandlers:1706 - [raw sql] ()
+2026-04-20 11:41:15.247 | INFO     | logging:callHandlers:1706 - select current_schema()
+2026-04-20 11:41:15.247 | INFO     | logging:callHandlers:1706 - [raw sql] ()
+2026-04-20 11:41:15.248 | INFO     | logging:callHandlers:1706 - show standard_conforming_strings
+2026-04-20 11:41:15.249 | INFO     | logging:callHandlers:1706 - [raw sql] ()
+2026-04-20 11:41:15.250 | INFO     | logging:callHandlers:1706 - BEGIN (implicit)
+2026-04-20 11:41:15.253 | INFO     | logging:callHandlers:1706 - SELECT pg_catalog.pg_class.relname 
+FROM pg_catalog.pg_class JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_class.relnamespace 
+WHERE pg_catalog.pg_class.relname = $1::VARCHAR AND pg_catalog.pg_class.relkind = ANY (ARRAY[$2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR]) AND pg_catalog.pg_table_is_visible(pg_catalog.pg_class.oid) AND pg_catalog.pg_namespace.nspname != $7::VARCHAR
+2026-04-20 11:41:15.253 | INFO     | logging:callHandlers:1706 - [generated in 0.00056s] ('tickets', 'r', 'p', 'f', 'v', 'm', 'pg_catalog')
+2026-04-20 11:41:15.257 | INFO     | logging:callHandlers:1706 - SELECT pg_catalog.pg_class.relname 
+FROM pg_catalog.pg_class JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_class.relnamespace 
+WHERE pg_catalog.pg_class.relname = $1::VARCHAR AND pg_catalog.pg_class.relkind = ANY (ARRAY[$2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR]) AND pg_catalog.pg_table_is_visible(pg_catalog.pg_class.oid) AND pg_catalog.pg_namespace.nspname != $7::VARCHAR
+2026-04-20 11:41:15.258 | INFO     | logging:callHandlers:1706 - [cached since 0.005296s ago] ('feedback', 'r', 'p', 'f', 'v', 'm', 'pg_catalog')
+2026-04-20 11:41:15.259 | INFO     | logging:callHandlers:1706 - COMMIT
+2026-04-20 11:41:15.259 | INFO     | logging:callHandlers:1706 - Database initialized
+2026-04-20 11:41:15.259 | INFO     | main:lifespan:247 - Database ready
+2026-04-20 11:41:15.262 | INFO     | logging:callHandlers:1706 - Load pretrained SentenceTransformer: paraphrase-multilingual-mpnet-base-v2
+2026-04-20 11:41:24.763 | INFO     | logging:callHandlers:1706 - Model loaded — dim=768
+2026-04-20 11:41:24.763 | INFO     | main:lifespan:251 - Embedding model loaded
+2026-04-20 11:41:24.788 | INFO     | logging:callHandlers:1706 - Loaded 1350 vectors from disk
+2026-04-20 11:41:24.788 | INFO     | main:lifespan:267 - FAISS index loaded: 1350 vectors
+2026-04-20 11:41:24.788 | INFO     | main:lifespan:271 - RAG pipeline ready
+2026-04-20 11:41:24.788 | INFO     | main:lifespan:273 - API running at http://0.0.0.0:8000
+2026-04-20 11:41:24.789 | INFO     | main:lifespan:274 - Docs: http://0.0.0.0:8000/docs
+2026-04-20 11:41:24.789 | INFO     | main:lifespan:275 - ============================================================
+2026-04-20 11:41:24.795 | INFO     | logging:callHandlers:1706 - Saved 1350 vectors
+2026-04-20 11:41:24.799 | INFO     | logging:callHandlers:1706 - Database connections closed
+2026-04-20 11:41:24.799 | INFO     | main:lifespan:282 - Shutdown complete
+2026-04-20 11:42:18.606 | INFO     | main:lifespan:242 - ============================================================
+2026-04-20 11:42:18.607 | INFO     | main:lifespan:243 - Starting Moviroo AI Chatbot v1.0.0
+2026-04-20 11:42:18.670 | INFO     | logging:callHandlers:1706 - select pg_catalog.version()
+2026-04-20 11:42:18.670 | INFO     | logging:callHandlers:1706 - [raw sql] ()
+2026-04-20 11:42:18.672 | INFO     | logging:callHandlers:1706 - select current_schema()
+2026-04-20 11:42:18.673 | INFO     | logging:callHandlers:1706 - [raw sql] ()
+2026-04-20 11:42:18.674 | INFO     | logging:callHandlers:1706 - show standard_conforming_strings
+2026-04-20 11:42:18.674 | INFO     | logging:callHandlers:1706 - [raw sql] ()
+2026-04-20 11:42:18.675 | INFO     | logging:callHandlers:1706 - BEGIN (implicit)
+2026-04-20 11:42:18.678 | INFO     | logging:callHandlers:1706 - SELECT pg_catalog.pg_class.relname 
+FROM pg_catalog.pg_class JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_class.relnamespace 
+WHERE pg_catalog.pg_class.relname = $1::VARCHAR AND pg_catalog.pg_class.relkind = ANY (ARRAY[$2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR]) AND pg_catalog.pg_table_is_visible(pg_catalog.pg_class.oid) AND pg_catalog.pg_namespace.nspname != $7::VARCHAR
+2026-04-20 11:42:18.678 | INFO     | logging:callHandlers:1706 - [generated in 0.00047s] ('tickets', 'r', 'p', 'f', 'v', 'm', 'pg_catalog')
+2026-04-20 11:42:18.683 | INFO     | logging:callHandlers:1706 - SELECT pg_catalog.pg_class.relname 
+FROM pg_catalog.pg_class JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_class.relnamespace 
+WHERE pg_catalog.pg_class.relname = $1::VARCHAR AND pg_catalog.pg_class.relkind = ANY (ARRAY[$2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR]) AND pg_catalog.pg_table_is_visible(pg_catalog.pg_class.oid) AND pg_catalog.pg_namespace.nspname != $7::VARCHAR
+2026-04-20 11:42:18.683 | INFO     | logging:callHandlers:1706 - [cached since 0.006198s ago] ('feedback', 'r', 'p', 'f', 'v', 'm', 'pg_catalog')
+2026-04-20 11:42:18.685 | INFO     | logging:callHandlers:1706 - COMMIT
+2026-04-20 11:42:18.686 | INFO     | logging:callHandlers:1706 - Database initialized
+2026-04-20 11:42:18.686 | INFO     | main:lifespan:247 - Database ready
+2026-04-20 11:42:18.689 | INFO     | logging:callHandlers:1706 - Load pretrained SentenceTransformer: paraphrase-multilingual-mpnet-base-v2
+2026-04-20 11:42:31.377 | INFO     | logging:callHandlers:1706 - Model loaded — dim=768
+2026-04-20 11:42:31.377 | INFO     | main:lifespan:251 - Embedding model loaded
+2026-04-20 11:42:31.403 | INFO     | logging:callHandlers:1706 - Loaded 1350 vectors from disk
+2026-04-20 11:42:31.404 | INFO     | main:lifespan:267 - FAISS index loaded: 1350 vectors
+2026-04-20 11:42:31.404 | INFO     | main:lifespan:271 - RAG pipeline ready
+2026-04-20 11:42:31.404 | INFO     | main:lifespan:273 - API running at http://0.0.0.0:8000
+2026-04-20 11:42:31.404 | INFO     | main:lifespan:274 - Docs: http://0.0.0.0:8000/docs
+2026-04-20 11:42:31.405 | INFO     | main:lifespan:275 - ============================================================
+2026-04-20 11:44:26.859 | INFO     | logging:callHandlers:1706 - FAISS results: 5 chunks for 'payment problem'
+2026-04-20 11:44:26.860 | INFO     | main:log_requests:325 - POST /chat/ → 200 (124ms)
+2026-04-20 11:45:06.617 | INFO     | logging:callHandlers:1706 - FAISS results: 5 chunks for 'problem card?'
+2026-04-20 11:45:06.899 | INFO     | logging:callHandlers:1706 - HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 404 Not Found"
+2026-04-20 11:45:06.899 | ERROR    | logging:callHandlers:1706 - Ollama HTTP error: 404
+2026-04-20 11:45:06.901 | INFO     | main:log_requests:325 - POST /chat/ → 200 (333ms)
+2026-04-20 11:45:34.863 | INFO     | logging:callHandlers:1706 - FAISS results: 0 chunks for 'how to change pwd'
+2026-04-20 11:45:34.869 | INFO     | logging:callHandlers:1706 - BEGIN (implicit)
+2026-04-20 11:45:34.872 | INFO     | logging:callHandlers:1706 - INSERT INTO tickets (ticket_id, question, answer, category, language, status, confidence_score, session_id, source, updated_at, indexed) VALUES ($1::VARCHAR, $2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR, $7::FLOAT, $8::VARCHAR, $9::VARCHAR, $10::TIMESTAMP WITH TIME ZONE, $11::BOOLEAN) RETURNING tickets.id, tickets.created_at
+2026-04-20 11:45:34.872 | INFO     | logging:callHandlers:1706 - [generated in 0.00089s] ('TKT-C4BF3C6C', 'how to change pwd', None, None, 'fr', 'open', 0.0, 'c50329b2-ee1a-4d0b-b262-b4eac5b7b3ac', 'chatbot', None, False)
+2026-04-20 11:45:34.902 | INFO     | logging:callHandlers:1706 - ROLLBACK
+2026-04-20 11:45:34.903 | ERROR    | main:general_error:339 - Unhandled error: (sqlalchemy.dialects.postgresql.asyncpg.ProgrammingError) <class 'asyncpg.exceptions.UndefinedColumnError'>: la colonne « confidence_score » de la relation « tickets » n'existe pas
+[SQL: INSERT INTO tickets (ticket_id, question, answer, category, language, status, confidence_score, session_id, source, updated_at, indexed) VALUES ($1::VARCHAR, $2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR, $7::FLOAT, $8::VARCHAR, $9::VARCHAR, $10::TIMESTAMP WITH TIME ZONE, $11::BOOLEAN) RETURNING tickets.id, tickets.created_at]
+[parameters: ('TKT-C4BF3C6C', 'how to change pwd', None, None, 'fr', 'open', 0.0, 'c50329b2-ee1a-4d0b-b262-b4eac5b7b3ac', 'chatbot', None, False)]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2026-04-20 11:47:15.194 | INFO     | logging:callHandlers:1706 - Saved 1350 vectors
+2026-04-20 11:47:15.197 | INFO     | logging:callHandlers:1706 - Database connections closed
+2026-04-20 11:47:15.198 | INFO     | main:lifespan:282 - Shutdown complete
+2026-04-20 11:50:00.637 | INFO     | main:lifespan:242 - ============================================================
+2026-04-20 11:50:00.637 | INFO     | main:lifespan:243 - Starting Moviroo AI Chatbot v1.0.0
+2026-04-20 11:50:00.704 | INFO     | logging:callHandlers:1706 - select pg_catalog.version()
+2026-04-20 11:50:00.705 | INFO     | logging:callHandlers:1706 - [raw sql] ()
+2026-04-20 11:50:00.707 | INFO     | logging:callHandlers:1706 - select current_schema()
+2026-04-20 11:50:00.707 | INFO     | logging:callHandlers:1706 - [raw sql] ()
+2026-04-20 11:50:00.708 | INFO     | logging:callHandlers:1706 - show standard_conforming_strings
+2026-04-20 11:50:00.709 | INFO     | logging:callHandlers:1706 - [raw sql] ()
+2026-04-20 11:50:00.710 | INFO     | logging:callHandlers:1706 - BEGIN (implicit)
+2026-04-20 11:50:00.713 | INFO     | logging:callHandlers:1706 - SELECT pg_catalog.pg_class.relname 
+FROM pg_catalog.pg_class JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_class.relnamespace 
+WHERE pg_catalog.pg_class.relname = $1::VARCHAR AND pg_catalog.pg_class.relkind = ANY (ARRAY[$2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR]) AND pg_catalog.pg_table_is_visible(pg_catalog.pg_class.oid) AND pg_catalog.pg_namespace.nspname != $7::VARCHAR
+2026-04-20 11:50:00.713 | INFO     | logging:callHandlers:1706 - [generated in 0.00057s] ('tickets', 'r', 'p', 'f', 'v', 'm', 'pg_catalog')
+2026-04-20 11:50:00.719 | INFO     | logging:callHandlers:1706 - SELECT pg_catalog.pg_class.relname 
+FROM pg_catalog.pg_class JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_class.relnamespace 
+WHERE pg_catalog.pg_class.relname = $1::VARCHAR AND pg_catalog.pg_class.relkind = ANY (ARRAY[$2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR]) AND pg_catalog.pg_table_is_visible(pg_catalog.pg_class.oid) AND pg_catalog.pg_namespace.nspname != $7::VARCHAR
+2026-04-20 11:50:00.719 | INFO     | logging:callHandlers:1706 - [cached since 0.006783s ago] ('feedback', 'r', 'p', 'f', 'v', 'm', 'pg_catalog')
+2026-04-20 11:50:00.720 | INFO     | logging:callHandlers:1706 - COMMIT
+2026-04-20 11:50:00.721 | INFO     | logging:callHandlers:1706 - Database initialized
+2026-04-20 11:50:00.721 | INFO     | main:lifespan:247 - Database ready
+2026-04-20 11:50:00.726 | INFO     | logging:callHandlers:1706 - Load pretrained SentenceTransformer: paraphrase-multilingual-mpnet-base-v2
+2026-04-20 11:50:12.647 | INFO     | logging:callHandlers:1706 - Model loaded — dim=768
+2026-04-20 11:50:12.648 | INFO     | main:lifespan:251 - Embedding model loaded
+2026-04-20 11:50:12.679 | INFO     | logging:callHandlers:1706 - Loaded 1350 vectors from disk
+2026-04-20 11:50:12.679 | INFO     | main:lifespan:267 - FAISS index loaded: 1350 vectors
+2026-04-20 11:50:12.679 | INFO     | main:lifespan:271 - RAG pipeline ready
+2026-04-20 11:50:12.679 | INFO     | main:lifespan:273 - API running at http://0.0.0.0:8000
+2026-04-20 11:50:12.680 | INFO     | main:lifespan:274 - Docs: http://0.0.0.0:8000/docs
+2026-04-20 11:50:12.680 | INFO     | main:lifespan:275 - ============================================================
+2026-04-20 11:50:38.767 | INFO     | logging:callHandlers:1706 - FAISS results: 5 chunks for 'app very lent'
+2026-04-20 11:50:39.045 | INFO     | logging:callHandlers:1706 - HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 404 Not Found"
+2026-04-20 11:50:39.046 | ERROR    | logging:callHandlers:1706 - Ollama HTTP error: 404
+2026-04-20 11:50:39.047 | INFO     | main:log_requests:325 - POST /chat/ → 200 (370ms)
+2026-04-20 11:52:05.740 | INFO     | logging:callHandlers:1706 - FAISS results: 5 chunks for 'payment non function pas'
+2026-04-20 11:52:06.020 | INFO     | logging:callHandlers:1706 - HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 404 Not Found"
+2026-04-20 11:52:06.021 | ERROR    | logging:callHandlers:1706 - Ollama HTTP error: 404
+2026-04-20 11:52:06.021 | INFO     | main:log_requests:325 - POST /chat/ → 200 (332ms)
+2026-04-20 11:54:10.404 | INFO     | logging:callHandlers:1706 - Saved 1350 vectors
+2026-04-20 11:54:10.407 | INFO     | logging:callHandlers:1706 - Database connections closed
+2026-04-20 11:54:10.407 | INFO     | main:lifespan:282 - Shutdown complete
+2026-04-20 11:54:43.358 | INFO     | main:lifespan:242 - ============================================================
+2026-04-20 11:54:43.358 | INFO     | main:lifespan:243 - Starting Moviroo AI Chatbot v1.0.0
+2026-04-20 11:54:43.435 | INFO     | logging:callHandlers:1706 - select pg_catalog.version()
+2026-04-20 11:54:43.437 | INFO     | logging:callHandlers:1706 - [raw sql] ()
+2026-04-20 11:54:43.439 | INFO     | logging:callHandlers:1706 - select current_schema()
+2026-04-20 11:54:43.439 | INFO     | logging:callHandlers:1706 - [raw sql] ()
+2026-04-20 11:54:43.441 | INFO     | logging:callHandlers:1706 - show standard_conforming_strings
+2026-04-20 11:54:43.441 | INFO     | logging:callHandlers:1706 - [raw sql] ()
+2026-04-20 11:54:43.443 | INFO     | logging:callHandlers:1706 - BEGIN (implicit)
+2026-04-20 11:54:43.447 | INFO     | logging:callHandlers:1706 - SELECT pg_catalog.pg_class.relname 
+FROM pg_catalog.pg_class JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_class.relnamespace 
+WHERE pg_catalog.pg_class.relname = $1::VARCHAR AND pg_catalog.pg_class.relkind = ANY (ARRAY[$2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR]) AND pg_catalog.pg_table_is_visible(pg_catalog.pg_class.oid) AND pg_catalog.pg_namespace.nspname != $7::VARCHAR
+2026-04-20 11:54:43.448 | INFO     | logging:callHandlers:1706 - [generated in 0.00091s] ('tickets', 'r', 'p', 'f', 'v', 'm', 'pg_catalog')
+2026-04-20 11:54:43.453 | INFO     | logging:callHandlers:1706 - SELECT pg_catalog.pg_class.relname 
+FROM pg_catalog.pg_class JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_class.relnamespace 
+WHERE pg_catalog.pg_class.relname = $1::VARCHAR AND pg_catalog.pg_class.relkind = ANY (ARRAY[$2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR]) AND pg_catalog.pg_table_is_visible(pg_catalog.pg_class.oid) AND pg_catalog.pg_namespace.nspname != $7::VARCHAR
+2026-04-20 11:54:43.455 | INFO     | logging:callHandlers:1706 - [cached since 0.007638s ago] ('feedback', 'r', 'p', 'f', 'v', 'm', 'pg_catalog')
+2026-04-20 11:54:43.456 | INFO     | logging:callHandlers:1706 - COMMIT
+2026-04-20 11:54:43.457 | INFO     | logging:callHandlers:1706 - Database initialized
+2026-04-20 11:54:43.457 | INFO     | main:lifespan:247 - Database ready
+2026-04-20 11:54:43.461 | INFO     | logging:callHandlers:1706 - Load pretrained SentenceTransformer: paraphrase-multilingual-mpnet-base-v2
+2026-04-20 11:54:53.235 | INFO     | logging:callHandlers:1706 - Model loaded — dim=768
+2026-04-20 11:54:53.237 | INFO     | main:lifespan:251 - Embedding model loaded
+2026-04-20 11:54:53.261 | INFO     | logging:callHandlers:1706 - Loaded 1350 vectors from disk
+2026-04-20 11:54:53.261 | INFO     | main:lifespan:267 - FAISS index loaded: 1350 vectors
+2026-04-20 11:54:53.261 | INFO     | main:lifespan:271 - RAG pipeline ready
+2026-04-20 11:54:53.262 | INFO     | main:lifespan:273 - API running at http://0.0.0.0:8000
+2026-04-20 11:54:53.262 | INFO     | main:lifespan:274 - Docs: http://0.0.0.0:8000/docs
+2026-04-20 11:54:53.262 | INFO     | main:lifespan:275 - ============================================================
+2026-04-20 11:55:17.151 | INFO     | logging:callHandlers:1706 - FAISS results: 5 chunks for 'payment'
+2026-04-20 11:55:17.153 | INFO     | main:log_requests:325 - POST /chat/ → 200 (91ms)
+2026-04-20 11:55:36.044 | INFO     | logging:callHandlers:1706 - FAISS results: 5 chunks for 'payment problem'
+2026-04-20 11:55:36.045 | INFO     | main:log_requests:325 - POST /chat/ → 200 (42ms)
+2026-04-20 11:55:43.861 | INFO     | logging:callHandlers:1706 - FAISS results: 5 chunks for 'en français'
+2026-04-20 11:55:44.138 | INFO     | logging:callHandlers:1706 - HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 404 Not Found"
+2026-04-20 11:55:44.139 | ERROR    | logging:callHandlers:1706 - Ollama HTTP error: 404
+2026-04-20 11:55:44.140 | INFO     | main:log_requests:325 - POST /chat/ → 200 (322ms)
+2026-04-20 11:59:44.968 | INFO     | logging:callHandlers:1706 - Saved 1350 vectors
+2026-04-20 11:59:44.972 | INFO     | logging:callHandlers:1706 - Database connections closed
+2026-04-20 11:59:44.972 | INFO     | main:lifespan:282 - Shutdown complete
+2026-04-20 11:59:54.263 | INFO     | main:lifespan:242 - ============================================================
+2026-04-20 11:59:54.263 | INFO     | main:lifespan:243 - Starting Moviroo AI Chatbot v1.0.0
+2026-04-20 11:59:54.325 | INFO     | logging:callHandlers:1706 - select pg_catalog.version()
+2026-04-20 11:59:54.326 | INFO     | logging:callHandlers:1706 - [raw sql] ()
+2026-04-20 11:59:54.327 | INFO     | logging:callHandlers:1706 - select current_schema()
+2026-04-20 11:59:54.328 | INFO     | logging:callHandlers:1706 - [raw sql] ()
+2026-04-20 11:59:54.329 | INFO     | logging:callHandlers:1706 - show standard_conforming_strings
+2026-04-20 11:59:54.329 | INFO     | logging:callHandlers:1706 - [raw sql] ()
+2026-04-20 11:59:54.330 | INFO     | logging:callHandlers:1706 - BEGIN (implicit)
+2026-04-20 11:59:54.333 | INFO     | logging:callHandlers:1706 - SELECT pg_catalog.pg_class.relname 
+FROM pg_catalog.pg_class JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_class.relnamespace 
+WHERE pg_catalog.pg_class.relname = $1::VARCHAR AND pg_catalog.pg_class.relkind = ANY (ARRAY[$2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR]) AND pg_catalog.pg_table_is_visible(pg_catalog.pg_class.oid) AND pg_catalog.pg_namespace.nspname != $7::VARCHAR
+2026-04-20 11:59:54.334 | INFO     | logging:callHandlers:1706 - [generated in 0.00067s] ('tickets', 'r', 'p', 'f', 'v', 'm', 'pg_catalog')
+2026-04-20 11:59:54.339 | INFO     | logging:callHandlers:1706 - SELECT pg_catalog.pg_class.relname 
+FROM pg_catalog.pg_class JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_class.relnamespace 
+WHERE pg_catalog.pg_class.relname = $1::VARCHAR AND pg_catalog.pg_class.relkind = ANY (ARRAY[$2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR]) AND pg_catalog.pg_table_is_visible(pg_catalog.pg_class.oid) AND pg_catalog.pg_namespace.nspname != $7::VARCHAR
+2026-04-20 11:59:54.339 | INFO     | logging:callHandlers:1706 - [cached since 0.005469s ago] ('feedback', 'r', 'p', 'f', 'v', 'm', 'pg_catalog')
+2026-04-20 11:59:54.340 | INFO     | logging:callHandlers:1706 - COMMIT
+2026-04-20 11:59:54.341 | INFO     | logging:callHandlers:1706 - Database initialized
+2026-04-20 11:59:54.341 | INFO     | main:lifespan:247 - Database ready
+2026-04-20 11:59:54.344 | INFO     | logging:callHandlers:1706 - Load pretrained SentenceTransformer: paraphrase-multilingual-mpnet-base-v2
+2026-04-20 12:00:04.203 | INFO     | logging:callHandlers:1706 - Model loaded — dim=768
+2026-04-20 12:00:04.204 | INFO     | main:lifespan:251 - Embedding model loaded
+2026-04-20 12:00:04.229 | INFO     | logging:callHandlers:1706 - Loaded 1350 vectors from disk
+2026-04-20 12:00:04.229 | INFO     | main:lifespan:267 - FAISS index loaded: 1350 vectors
+2026-04-20 12:00:04.230 | INFO     | main:lifespan:271 - RAG pipeline ready
+2026-04-20 12:00:04.230 | INFO     | main:lifespan:273 - API running at http://0.0.0.0:8000
+2026-04-20 12:00:04.230 | INFO     | main:lifespan:274 - Docs: http://0.0.0.0:8000/docs
+2026-04-20 12:00:04.230 | INFO     | main:lifespan:275 - ============================================================
+2026-04-20 12:00:06.885 | INFO     | logging:callHandlers:1706 - FAISS: 2 results for 'Estimez le prix du trajet de CDG vers le centre de Paris'
+2026-04-20 12:00:07.154 | INFO     | logging:callHandlers:1706 - HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 404 Not Found"
+2026-04-20 12:00:07.155 | ERROR    | logging:callHandlers:1706 - Ollama HTTP error: 404
+2026-04-20 12:00:07.158 | INFO     | logging:callHandlers:1706 - BEGIN (implicit)
+2026-04-20 12:00:07.161 | INFO     | logging:callHandlers:1706 - INSERT INTO tickets (ticket_id, question, answer, category, language, status, confidence_score, session_id, source, updated_at, indexed) VALUES ($1::VARCHAR, $2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR, $7::FLOAT, $8::VARCHAR, $9::VARCHAR, $10::TIMESTAMP WITH TIME ZONE, $11::BOOLEAN) RETURNING tickets.id, tickets.created_at
+2026-04-20 12:00:07.161 | INFO     | logging:callHandlers:1706 - [generated in 0.00055s] ('TKT-FD4E9920', 'Estimez le prix du trajet de CDG vers le centre de Paris', None, 'booking', 'en', 'open', 0.56, '429e4470-d602-42f1-88e1-f52fd4ddb26e', 'chatbot', None, False)
+2026-04-20 12:00:07.175 | INFO     | logging:callHandlers:1706 - ROLLBACK
+2026-04-20 12:00:07.177 | ERROR    | main:general_error:339 - Unhandled error: (sqlalchemy.dialects.postgresql.asyncpg.ProgrammingError) <class 'asyncpg.exceptions.UndefinedColumnError'>: la colonne « confidence_score » de la relation « tickets » n'existe pas
+[SQL: INSERT INTO tickets (ticket_id, question, answer, category, language, status, confidence_score, session_id, source, updated_at, indexed) VALUES ($1::VARCHAR, $2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR, $7::FLOAT, $8::VARCHAR, $9::VARCHAR, $10::TIMESTAMP WITH TIME ZONE, $11::BOOLEAN) RETURNING tickets.id, tickets.created_at]
+[parameters: ('TKT-FD4E9920', 'Estimez le prix du trajet de CDG vers le centre de Paris', None, 'booking', 'en', 'open', 0.56, '429e4470-d602-42f1-88e1-f52fd4ddb26e', 'chatbot', None, False)]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2026-04-20 12:00:12.763 | INFO     | logging:callHandlers:1706 - Saved 1350 vectors
+2026-04-20 12:00:12.766 | INFO     | logging:callHandlers:1706 - Database connections closed
+2026-04-20 12:00:12.767 | INFO     | main:lifespan:282 - Shutdown complete
+2026-04-20 12:00:21.425 | INFO     | main:lifespan:242 - ============================================================
+2026-04-20 12:00:21.425 | INFO     | main:lifespan:243 - Starting Moviroo AI Chatbot v1.0.0
+2026-04-20 12:00:21.486 | INFO     | logging:callHandlers:1706 - select pg_catalog.version()
+2026-04-20 12:00:21.487 | INFO     | logging:callHandlers:1706 - [raw sql] ()
+2026-04-20 12:00:21.488 | INFO     | logging:callHandlers:1706 - select current_schema()
+2026-04-20 12:00:21.488 | INFO     | logging:callHandlers:1706 - [raw sql] ()
+2026-04-20 12:00:21.490 | INFO     | logging:callHandlers:1706 - show standard_conforming_strings
+2026-04-20 12:00:21.490 | INFO     | logging:callHandlers:1706 - [raw sql] ()
+2026-04-20 12:00:21.491 | INFO     | logging:callHandlers:1706 - BEGIN (implicit)
+2026-04-20 12:00:21.494 | INFO     | logging:callHandlers:1706 - SELECT pg_catalog.pg_class.relname 
+FROM pg_catalog.pg_class JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_class.relnamespace 
+WHERE pg_catalog.pg_class.relname = $1::VARCHAR AND pg_catalog.pg_class.relkind = ANY (ARRAY[$2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR]) AND pg_catalog.pg_table_is_visible(pg_catalog.pg_class.oid) AND pg_catalog.pg_namespace.nspname != $7::VARCHAR
+2026-04-20 12:00:21.495 | INFO     | logging:callHandlers:1706 - [generated in 0.00058s] ('tickets', 'r', 'p', 'f', 'v', 'm', 'pg_catalog')
+2026-04-20 12:00:21.499 | INFO     | logging:callHandlers:1706 - SELECT pg_catalog.pg_class.relname 
+FROM pg_catalog.pg_class JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_class.relnamespace 
+WHERE pg_catalog.pg_class.relname = $1::VARCHAR AND pg_catalog.pg_class.relkind = ANY (ARRAY[$2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR]) AND pg_catalog.pg_table_is_visible(pg_catalog.pg_class.oid) AND pg_catalog.pg_namespace.nspname != $7::VARCHAR
+2026-04-20 12:00:21.499 | INFO     | logging:callHandlers:1706 - [cached since 0.006006s ago] ('feedback', 'r', 'p', 'f', 'v', 'm', 'pg_catalog')
+2026-04-20 12:00:21.501 | INFO     | logging:callHandlers:1706 - COMMIT
+2026-04-20 12:00:21.501 | INFO     | logging:callHandlers:1706 - Database initialized
+2026-04-20 12:00:21.502 | INFO     | main:lifespan:247 - Database ready
+2026-04-20 12:00:21.505 | INFO     | logging:callHandlers:1706 - Load pretrained SentenceTransformer: paraphrase-multilingual-mpnet-base-v2
+2026-04-20 12:00:31.456 | INFO     | logging:callHandlers:1706 - Model loaded — dim=768
+2026-04-20 12:00:31.456 | INFO     | main:lifespan:251 - Embedding model loaded
+2026-04-20 12:00:31.480 | INFO     | logging:callHandlers:1706 - Loaded 1350 vectors from disk
+2026-04-20 12:00:31.481 | INFO     | main:lifespan:267 - FAISS index loaded: 1350 vectors
+2026-04-20 12:00:31.481 | INFO     | main:lifespan:271 - RAG pipeline ready
+2026-04-20 12:00:31.481 | INFO     | main:lifespan:273 - API running at http://0.0.0.0:8000
+2026-04-20 12:00:31.481 | INFO     | main:lifespan:274 - Docs: http://0.0.0.0:8000/docs
+2026-04-20 12:00:31.482 | INFO     | main:lifespan:275 - ============================================================
+2026-04-20 12:01:19.518 | INFO     | logging:callHandlers:1706 - FAISS: 2 results for 'Estimez le prix du trajet de CDG vers le centre de Parisl'
+2026-04-20 12:01:19.795 | INFO     | logging:callHandlers:1706 - HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 404 Not Found"
+2026-04-20 12:01:19.796 | ERROR    | logging:callHandlers:1706 - Ollama HTTP error: 404
+2026-04-20 12:01:19.798 | INFO     | logging:callHandlers:1706 - BEGIN (implicit)
+2026-04-20 12:01:19.801 | INFO     | logging:callHandlers:1706 - INSERT INTO tickets (ticket_id, question, answer, category, language, status, confidence_score, session_id, source, updated_at, indexed) VALUES ($1::VARCHAR, $2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR, $7::FLOAT, $8::VARCHAR, $9::VARCHAR, $10::TIMESTAMP WITH TIME ZONE, $11::BOOLEAN) RETURNING tickets.id, tickets.created_at
+2026-04-20 12:01:19.801 | INFO     | logging:callHandlers:1706 - [generated in 0.00056s] ('TKT-CC435D47', 'Estimez le prix du trajet de CDG vers le centre de Parisl', None, 'booking', 'en', 'open', 0.568, 'ccb17b77-5c9b-4a6c-a77f-baf515dbd808', 'chatbot', None, False)
+2026-04-20 12:01:19.805 | INFO     | logging:callHandlers:1706 - ROLLBACK
+2026-04-20 12:01:19.806 | ERROR    | main:general_error:339 - Unhandled error: (sqlalchemy.dialects.postgresql.asyncpg.ProgrammingError) <class 'asyncpg.exceptions.UndefinedColumnError'>: la colonne « confidence_score » de la relation « tickets » n'existe pas
+[SQL: INSERT INTO tickets (ticket_id, question, answer, category, language, status, confidence_score, session_id, source, updated_at, indexed) VALUES ($1::VARCHAR, $2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR, $7::FLOAT, $8::VARCHAR, $9::VARCHAR, $10::TIMESTAMP WITH TIME ZONE, $11::BOOLEAN) RETURNING tickets.id, tickets.created_at]
+[parameters: ('TKT-CC435D47', 'Estimez le prix du trajet de CDG vers le centre de Parisl', None, 'booking', 'en', 'open', 0.568, 'ccb17b77-5c9b-4a6c-a77f-baf515dbd808', 'chatbot', None, False)]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2026-04-20 12:02:13.273 | INFO     | logging:callHandlers:1706 - Saved 1350 vectors
+2026-04-20 12:02:13.277 | INFO     | logging:callHandlers:1706 - Database connections closed
+2026-04-20 12:02:13.277 | INFO     | main:lifespan:282 - Shutdown complete
+2026-04-20 12:07:54.394 | INFO     | main:lifespan:242 - ============================================================
+2026-04-20 12:07:54.394 | INFO     | main:lifespan:243 - Starting Moviroo AI Chatbot v1.0.0
+2026-04-20 12:07:54.457 | INFO     | logging:callHandlers:1706 - select pg_catalog.version()
+2026-04-20 12:07:54.457 | INFO     | logging:callHandlers:1706 - [raw sql] ()
+2026-04-20 12:07:54.459 | INFO     | logging:callHandlers:1706 - select current_schema()
+2026-04-20 12:07:54.459 | INFO     | logging:callHandlers:1706 - [raw sql] ()
+2026-04-20 12:07:54.460 | INFO     | logging:callHandlers:1706 - show standard_conforming_strings
+2026-04-20 12:07:54.461 | INFO     | logging:callHandlers:1706 - [raw sql] ()
+2026-04-20 12:07:54.462 | INFO     | logging:callHandlers:1706 - BEGIN (implicit)
+2026-04-20 12:07:54.465 | INFO     | logging:callHandlers:1706 - SELECT pg_catalog.pg_class.relname 
+FROM pg_catalog.pg_class JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_class.relnamespace 
+WHERE pg_catalog.pg_class.relname = $1::VARCHAR AND pg_catalog.pg_class.relkind = ANY (ARRAY[$2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR]) AND pg_catalog.pg_table_is_visible(pg_catalog.pg_class.oid) AND pg_catalog.pg_namespace.nspname != $7::VARCHAR
+2026-04-20 12:07:54.465 | INFO     | logging:callHandlers:1706 - [generated in 0.00056s] ('tickets', 'r', 'p', 'f', 'v', 'm', 'pg_catalog')
+2026-04-20 12:07:54.471 | INFO     | logging:callHandlers:1706 - SELECT pg_catalog.pg_class.relname 
+FROM pg_catalog.pg_class JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_class.relnamespace 
+WHERE pg_catalog.pg_class.relname = $1::VARCHAR AND pg_catalog.pg_class.relkind = ANY (ARRAY[$2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR]) AND pg_catalog.pg_table_is_visible(pg_catalog.pg_class.oid) AND pg_catalog.pg_namespace.nspname != $7::VARCHAR
+2026-04-20 12:07:54.471 | INFO     | logging:callHandlers:1706 - [cached since 0.006436s ago] ('feedback', 'r', 'p', 'f', 'v', 'm', 'pg_catalog')
+2026-04-20 12:07:54.471 | INFO     | logging:callHandlers:1706 - COMMIT
+2026-04-20 12:07:54.473 | INFO     | logging:callHandlers:1706 - Database initialized
+2026-04-20 12:07:54.473 | INFO     | main:lifespan:247 - Database ready
+2026-04-20 12:07:54.476 | INFO     | logging:callHandlers:1706 - Load pretrained SentenceTransformer: paraphrase-multilingual-mpnet-base-v2
+2026-04-20 12:08:11.374 | INFO     | logging:callHandlers:1706 - Model loaded — dim=768
+2026-04-20 12:08:11.374 | INFO     | main:lifespan:251 - Embedding model loaded
+2026-04-20 12:08:11.418 | INFO     | logging:callHandlers:1706 - Loaded 1350 vectors from disk
+2026-04-20 12:08:11.418 | INFO     | main:lifespan:267 - FAISS index loaded: 1350 vectors
+2026-04-20 12:08:11.419 | INFO     | main:lifespan:271 - RAG pipeline ready
+2026-04-20 12:08:11.419 | INFO     | main:lifespan:273 - API running at http://0.0.0.0:8000
+2026-04-20 12:08:11.419 | INFO     | main:lifespan:274 - Docs: http://0.0.0.0:8000/docs
+2026-04-20 12:08:11.419 | INFO     | main:lifespan:275 - ============================================================
+2026-04-20 12:09:17.459 | INFO     | logging:callHandlers:1706 - FAISS: 5 results for 'Quel est le meilleur moment pour éviter les embouteillages ?'
+2026-04-20 12:09:17.744 | INFO     | logging:callHandlers:1706 - HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 404 Not Found"
+2026-04-20 12:09:17.746 | ERROR    | logging:callHandlers:1706 - Ollama HTTP error: 404
+2026-04-20 12:09:17.747 | INFO     | logging:callHandlers:1706 - BEGIN (implicit)
+2026-04-20 12:09:17.750 | INFO     | logging:callHandlers:1706 - INSERT INTO tickets (ticket_id, question, answer, category, language, status, confidence_score, session_id, source, updated_at, indexed) VALUES ($1::VARCHAR, $2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR, $7::FLOAT, $8::VARCHAR, $9::VARCHAR, $10::TIMESTAMP WITH TIME ZONE, $11::BOOLEAN) RETURNING tickets.id, tickets.created_at
+2026-04-20 12:09:17.751 | INFO     | logging:callHandlers:1706 - [generated in 0.00054s] ('TKT-6C1D7D57', 'Quel est le meilleur moment pour éviter les embouteillages ?', None, 'ride_delay', 'ar', 'open', 0.605, 'ccb17b77-5c9b-4a6c-a77f-baf515dbd808', 'chatbot', None, False)
+2026-04-20 12:09:17.754 | INFO     | logging:callHandlers:1706 - ROLLBACK
+2026-04-20 12:09:17.755 | ERROR    | main:general_error:339 - Unhandled error: (sqlalchemy.dialects.postgresql.asyncpg.ProgrammingError) <class 'asyncpg.exceptions.UndefinedColumnError'>: la colonne « confidence_score » de la relation « tickets » n'existe pas
+[SQL: INSERT INTO tickets (ticket_id, question, answer, category, language, status, confidence_score, session_id, source, updated_at, indexed) VALUES ($1::VARCHAR, $2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR, $7::FLOAT, $8::VARCHAR, $9::VARCHAR, $10::TIMESTAMP WITH TIME ZONE, $11::BOOLEAN) RETURNING tickets.id, tickets.created_at]
+[parameters: ('TKT-6C1D7D57', 'Quel est le meilleur moment pour éviter les embouteillages ?', None, 'ride_delay', 'ar', 'open', 0.605, 'ccb17b77-5c9b-4a6c-a77f-baf515dbd808', 'chatbot', None, False)]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2026-04-20 12:13:51.125 | INFO     | logging:callHandlers:1706 - Saved 1350 vectors
+2026-04-20 12:13:51.184 | INFO     | logging:callHandlers:1706 - Database connections closed
+2026-04-20 12:13:51.185 | INFO     | main:lifespan:282 - Shutdown complete
+2026-04-20 12:14:00.708 | INFO     | main:lifespan:242 - ============================================================
+2026-04-20 12:14:00.708 | INFO     | main:lifespan:243 - Starting Moviroo AI Chatbot v1.0.0
+2026-04-20 12:14:00.786 | INFO     | logging:callHandlers:1706 - select pg_catalog.version()
+2026-04-20 12:14:00.786 | INFO     | logging:callHandlers:1706 - [raw sql] ()
+2026-04-20 12:14:00.788 | INFO     | logging:callHandlers:1706 - select current_schema()
+2026-04-20 12:14:00.788 | INFO     | logging:callHandlers:1706 - [raw sql] ()
+2026-04-20 12:14:00.790 | INFO     | logging:callHandlers:1706 - show standard_conforming_strings
+2026-04-20 12:14:00.790 | INFO     | logging:callHandlers:1706 - [raw sql] ()
+2026-04-20 12:14:00.792 | INFO     | logging:callHandlers:1706 - BEGIN (implicit)
+2026-04-20 12:14:00.795 | INFO     | logging:callHandlers:1706 - SELECT pg_catalog.pg_class.relname 
+FROM pg_catalog.pg_class JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_class.relnamespace 
+WHERE pg_catalog.pg_class.relname = $1::VARCHAR AND pg_catalog.pg_class.relkind = ANY (ARRAY[$2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR]) AND pg_catalog.pg_table_is_visible(pg_catalog.pg_class.oid) AND pg_catalog.pg_namespace.nspname != $7::VARCHAR
+2026-04-20 12:14:00.795 | INFO     | logging:callHandlers:1706 - [generated in 0.00065s] ('tickets', 'r', 'p', 'f', 'v', 'm', 'pg_catalog')
+2026-04-20 12:14:00.801 | INFO     | logging:callHandlers:1706 - SELECT pg_catalog.pg_class.relname 
+FROM pg_catalog.pg_class JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_class.relnamespace 
+WHERE pg_catalog.pg_class.relname = $1::VARCHAR AND pg_catalog.pg_class.relkind = ANY (ARRAY[$2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR]) AND pg_catalog.pg_table_is_visible(pg_catalog.pg_class.oid) AND pg_catalog.pg_namespace.nspname != $7::VARCHAR
+2026-04-20 12:14:00.801 | INFO     | logging:callHandlers:1706 - [cached since 0.006479s ago] ('feedback', 'r', 'p', 'f', 'v', 'm', 'pg_catalog')
+2026-04-20 12:14:00.802 | INFO     | logging:callHandlers:1706 - COMMIT
+2026-04-20 12:14:00.803 | INFO     | logging:callHandlers:1706 - Database initialized
+2026-04-20 12:14:00.803 | INFO     | main:lifespan:247 - Database ready
+2026-04-20 12:14:00.806 | INFO     | logging:callHandlers:1706 - Load pretrained SentenceTransformer: paraphrase-multilingual-mpnet-base-v2
+2026-04-20 12:14:11.664 | INFO     | logging:callHandlers:1706 - Saved 1350 vectors
+2026-04-20 12:14:11.668 | INFO     | logging:callHandlers:1706 - Database connections closed
+2026-04-20 12:14:11.669 | INFO     | main:lifespan:282 - Shutdown complete
+2026-04-20 12:14:13.373 | INFO     | logging:callHandlers:1706 - Model loaded — dim=768
+2026-04-20 12:14:13.374 | INFO     | main:lifespan:251 - Embedding model loaded
+2026-04-20 12:14:13.398 | INFO     | logging:callHandlers:1706 - Loaded 1350 vectors from disk
+2026-04-20 12:14:13.398 | INFO     | main:lifespan:267 - FAISS index loaded: 1350 vectors
+2026-04-20 12:14:13.398 | INFO     | main:lifespan:271 - RAG pipeline ready
+2026-04-20 12:14:13.399 | INFO     | main:lifespan:273 - API running at http://0.0.0.0:8000
+2026-04-20 12:14:13.399 | INFO     | main:lifespan:274 - Docs: http://0.0.0.0:8000/docs
+2026-04-20 12:14:13.399 | INFO     | main:lifespan:275 - ============================================================
+2026-04-20 12:14:20.409 | INFO     | main:lifespan:242 - ============================================================
+2026-04-20 12:14:20.409 | INFO     | main:lifespan:243 - Starting Moviroo AI Chatbot v1.0.0
+2026-04-20 12:14:20.577 | INFO     | logging:callHandlers:1706 - select pg_catalog.version()
+2026-04-20 12:14:20.577 | INFO     | logging:callHandlers:1706 - [raw sql] ()
+2026-04-20 12:14:20.579 | INFO     | logging:callHandlers:1706 - select current_schema()
+2026-04-20 12:14:20.579 | INFO     | logging:callHandlers:1706 - [raw sql] ()
+2026-04-20 12:14:20.580 | INFO     | logging:callHandlers:1706 - show standard_conforming_strings
+2026-04-20 12:14:20.581 | INFO     | logging:callHandlers:1706 - [raw sql] ()
+2026-04-20 12:14:20.582 | INFO     | logging:callHandlers:1706 - BEGIN (implicit)
+2026-04-20 12:14:20.585 | INFO     | logging:callHandlers:1706 - SELECT pg_catalog.pg_class.relname 
+FROM pg_catalog.pg_class JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_class.relnamespace 
+WHERE pg_catalog.pg_class.relname = $1::VARCHAR AND pg_catalog.pg_class.relkind = ANY (ARRAY[$2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR]) AND pg_catalog.pg_table_is_visible(pg_catalog.pg_class.oid) AND pg_catalog.pg_namespace.nspname != $7::VARCHAR
+2026-04-20 12:14:20.585 | INFO     | logging:callHandlers:1706 - [generated in 0.00060s] ('tickets', 'r', 'p', 'f', 'v', 'm', 'pg_catalog')
+2026-04-20 12:14:20.591 | INFO     | logging:callHandlers:1706 - SELECT pg_catalog.pg_class.relname 
+FROM pg_catalog.pg_class JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_class.relnamespace 
+WHERE pg_catalog.pg_class.relname = $1::VARCHAR AND pg_catalog.pg_class.relkind = ANY (ARRAY[$2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR]) AND pg_catalog.pg_table_is_visible(pg_catalog.pg_class.oid) AND pg_catalog.pg_namespace.nspname != $7::VARCHAR
+2026-04-20 12:14:20.591 | INFO     | logging:callHandlers:1706 - [cached since 0.006149s ago] ('feedback', 'r', 'p', 'f', 'v', 'm', 'pg_catalog')
+2026-04-20 12:14:20.592 | INFO     | logging:callHandlers:1706 - COMMIT
+2026-04-20 12:14:20.592 | INFO     | logging:callHandlers:1706 - Database initialized
+2026-04-20 12:14:20.592 | INFO     | main:lifespan:247 - Database ready
+2026-04-20 12:14:20.597 | INFO     | logging:callHandlers:1706 - Load pretrained SentenceTransformer: paraphrase-multilingual-mpnet-base-v2
+2026-04-20 12:14:33.646 | INFO     | logging:callHandlers:1706 - Model loaded — dim=768
+2026-04-20 12:14:33.646 | INFO     | main:lifespan:251 - Embedding model loaded
+2026-04-20 12:14:33.649 | INFO     | logging:callHandlers:1706 - Loaded 1350 vectors from disk
+2026-04-20 12:14:33.650 | INFO     | main:lifespan:267 - FAISS index loaded: 1350 vectors
+2026-04-20 12:14:33.650 | INFO     | main:lifespan:271 - RAG pipeline ready
+2026-04-20 12:14:33.650 | INFO     | main:lifespan:273 - API running at http://0.0.0.0:8000
+2026-04-20 12:14:33.650 | INFO     | main:lifespan:274 - Docs: http://0.0.0.0:8000/docs
+2026-04-20 12:14:33.650 | INFO     | main:lifespan:275 - ============================================================
+2026-04-20 12:15:33.368 | INFO     | logging:callHandlers:1706 - FAISS: 0 results for 'Comparer berline vs van pour 4 personnes'
+2026-04-20 12:15:33.371 | INFO     | logging:callHandlers:1706 - BEGIN (implicit)
+2026-04-20 12:15:33.374 | INFO     | logging:callHandlers:1706 - INSERT INTO tickets (ticket_id, question, answer, category, language, status, confidence_score, session_id, source, updated_at, indexed) VALUES ($1::VARCHAR, $2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR, $7::FLOAT, $8::VARCHAR, $9::VARCHAR, $10::TIMESTAMP WITH TIME ZONE, $11::BOOLEAN) RETURNING tickets.id, tickets.created_at
+2026-04-20 12:15:33.375 | INFO     | logging:callHandlers:1706 - [generated in 0.00074s] ('TKT-F4872B75', 'Comparer berline vs van pour 4 personnes', None, None, 'fr', 'open', 0.0, '44e05dc8-6a99-4719-944a-5ed04c9b363b', 'chatbot', None, False)
+2026-04-20 12:15:33.390 | INFO     | logging:callHandlers:1706 - ROLLBACK
+2026-04-20 12:15:33.394 | ERROR    | main:general_error:339 - Unhandled error: (sqlalchemy.dialects.postgresql.asyncpg.IntegrityError) <class 'asyncpg.exceptions.NotNullViolationError'>: une valeur NULL viole la contrainte NOT NULL de la colonne « user_id » dans la relation « tickets »
+DETAIL:  La ligne en échec contient (1, TKT-F4872B75, null, Comparer berline vs van pour 4 personnes, null, fr, null, open, null, 2026-04-20 13:15:33.376358+02, null, null, null, null, null, 0, 44e05dc8-6a99-4719-944a-5ed04c9b363b, chatbot, f).
+[SQL: INSERT INTO tickets (ticket_id, question, answer, category, language, status, confidence_score, session_id, source, updated_at, indexed) VALUES ($1::VARCHAR, $2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR, $7::FLOAT, $8::VARCHAR, $9::VARCHAR, $10::TIMESTAMP WITH TIME ZONE, $11::BOOLEAN) RETURNING tickets.id, tickets.created_at]
+[parameters: ('TKT-F4872B75', 'Comparer berline vs van pour 4 personnes', None, None, 'fr', 'open', 0.0, '44e05dc8-6a99-4719-944a-5ed04c9b363b', 'chatbot', None, False)]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+2026-04-20 12:17:22.145 | INFO     | logging:callHandlers:1706 - Saved 1350 vectors
+2026-04-20 12:17:22.149 | INFO     | logging:callHandlers:1706 - Database connections closed
+2026-04-20 12:17:22.149 | INFO     | main:lifespan:282 - Shutdown complete
+2026-04-20 12:17:33.594 | INFO     | main:lifespan:242 - ============================================================
+2026-04-20 12:17:33.594 | INFO     | main:lifespan:243 - Starting Moviroo AI Chatbot v1.0.0
+2026-04-20 12:17:33.660 | INFO     | logging:callHandlers:1706 - select pg_catalog.version()
+2026-04-20 12:17:33.660 | INFO     | logging:callHandlers:1706 - [raw sql] ()
+2026-04-20 12:17:33.661 | INFO     | logging:callHandlers:1706 - select current_schema()
+2026-04-20 12:17:33.662 | INFO     | logging:callHandlers:1706 - [raw sql] ()
+2026-04-20 12:17:33.663 | INFO     | logging:callHandlers:1706 - show standard_conforming_strings
+2026-04-20 12:17:33.663 | INFO     | logging:callHandlers:1706 - [raw sql] ()
+2026-04-20 12:17:33.664 | INFO     | logging:callHandlers:1706 - BEGIN (implicit)
+2026-04-20 12:17:33.668 | INFO     | logging:callHandlers:1706 - SELECT pg_catalog.pg_class.relname 
+FROM pg_catalog.pg_class JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_class.relnamespace 
+WHERE pg_catalog.pg_class.relname = $1::VARCHAR AND pg_catalog.pg_class.relkind = ANY (ARRAY[$2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR]) AND pg_catalog.pg_table_is_visible(pg_catalog.pg_class.oid) AND pg_catalog.pg_namespace.nspname != $7::VARCHAR
+2026-04-20 12:17:33.668 | INFO     | logging:callHandlers:1706 - [generated in 0.00076s] ('tickets', 'r', 'p', 'f', 'v', 'm', 'pg_catalog')
+2026-04-20 12:17:33.673 | INFO     | logging:callHandlers:1706 - SELECT pg_catalog.pg_class.relname 
+FROM pg_catalog.pg_class JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_class.relnamespace 
+WHERE pg_catalog.pg_class.relname = $1::VARCHAR AND pg_catalog.pg_class.relkind = ANY (ARRAY[$2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR]) AND pg_catalog.pg_table_is_visible(pg_catalog.pg_class.oid) AND pg_catalog.pg_namespace.nspname != $7::VARCHAR
+2026-04-20 12:17:33.675 | INFO     | logging:callHandlers:1706 - [cached since 0.007036s ago] ('feedback', 'r', 'p', 'f', 'v', 'm', 'pg_catalog')
+2026-04-20 12:17:33.676 | INFO     | logging:callHandlers:1706 - COMMIT
+2026-04-20 12:17:33.676 | INFO     | logging:callHandlers:1706 - Database initialized
+2026-04-20 12:17:33.676 | INFO     | main:lifespan:247 - Database ready
+2026-04-20 12:17:33.679 | INFO     | logging:callHandlers:1706 - Load pretrained SentenceTransformer: paraphrase-multilingual-mpnet-base-v2
+2026-04-20 12:17:54.386 | INFO     | logging:callHandlers:1706 - Model loaded — dim=768
+2026-04-20 12:17:54.387 | INFO     | main:lifespan:251 - Embedding model loaded
+2026-04-20 12:17:54.413 | INFO     | logging:callHandlers:1706 - Loaded 1350 vectors from disk
+2026-04-20 12:17:54.413 | INFO     | main:lifespan:267 - FAISS index loaded: 1350 vectors
+2026-04-20 12:17:54.414 | INFO     | main:lifespan:271 - RAG pipeline ready
+2026-04-20 12:17:54.414 | INFO     | main:lifespan:273 - API running at http://0.0.0.0:8000
+2026-04-20 12:17:54.414 | INFO     | main:lifespan:274 - Docs: http://0.0.0.0:8000/docs
+2026-04-20 12:17:54.414 | INFO     | main:lifespan:275 - ============================================================
+2026-04-20 12:17:55.150 | INFO     | logging:callHandlers:1706 - FAISS: 5 results for 'Quel est le meilleur moment pour éviter les embouteillages ?'
+2026-04-20 12:17:55.425 | INFO     | logging:callHandlers:1706 - HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 404 Not Found"
+2026-04-20 12:17:55.427 | ERROR    | logging:callHandlers:1706 - Ollama HTTP error: 404
+2026-04-20 12:17:55.428 | INFO     | logging:callHandlers:1706 - BEGIN (implicit)
+2026-04-20 12:17:55.431 | INFO     | logging:callHandlers:1706 - INSERT INTO tickets (ticket_id, question, answer, category, language, status, confidence_score, session_id, source, updated_at, indexed) VALUES ($1::VARCHAR, $2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR, $7::FLOAT, $8::VARCHAR, $9::VARCHAR, $10::TIMESTAMP WITH TIME ZONE, $11::BOOLEAN) RETURNING tickets.id, tickets.created_at
+2026-04-20 12:17:55.432 | INFO     | logging:callHandlers:1706 - [generated in 0.00056s] ('TKT-AD261B7E', 'Quel est le meilleur moment pour éviter les embouteillages ?', None, 'ride_delay', 'ar', 'open', 0.605, '44e05dc8-6a99-4719-944a-5ed04c9b363b', 'chatbot', None, False)
+2026-04-20 12:17:55.436 | INFO     | logging:callHandlers:1706 - Auto-ticket created: TKT-AD261B7E
+2026-04-20 12:17:55.438 | INFO     | logging:callHandlers:1706 - COMMIT
+2026-04-20 12:17:55.440 | INFO     | main:log_requests:325 - POST /chat/ → 200 (473ms)
+2026-04-20 21:06:00.701 | INFO     | logging:callHandlers:1706 - Saved 1350 vectors
+2026-04-20 21:06:00.745 | INFO     | logging:callHandlers:1706 - Database connections closed
+2026-04-20 21:06:00.746 | INFO     | main:lifespan:282 - Shutdown complete
