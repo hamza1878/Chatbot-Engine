@@ -5,10 +5,10 @@ FAISS retrieval → score routing → LLM generation
 from dataclasses import dataclass, field
 from typing import List, Dict, Any, Optional
 import logging
-
+from core.llm_ollama import generate_answer
 from models.embedding import embedding_service
 from models.vector_store import FAISSVectorStore
-from core.llm_service import generate_answer
+# from core.llm_service import generate_answer
 from config import settings
 
 logger = logging.getLogger(__name__)
@@ -142,18 +142,18 @@ class RAGPipeline:
             )
 
         # Medium confidence: LLM reformulates using top-k context
-        llm_answer = await generate_answer(q, chunks)
-
+        # llm_answer = await generate_answer(q, chunks)
+        context = "\n".join([c["answer"] for c in chunks])
+        llm_answer = generate_answer(q, context)
         return RAGResponse(
             answer=llm_answer,
             confidence=round(best_score, 3),
             category=best_meta.get("category", "general"),
             language=best_meta.get("language", "en"),
             source="rag_llm",
-            suggest_ticket=best_score < self.LOW + 0.1,
+            suggest_ticket=best_score < self.LOW,
             top_chunks=chunks,
         )
-
     @staticmethod
     def _fallback(msg: str) -> RAGResponse:
         return RAGResponse(
